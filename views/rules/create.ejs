@@ -1,0 +1,147 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="display-6 mb-3">Create New Rule</h1>
+    <div class="d-flex justify-content-end">
+      <a href="/rules" class="btn btn-outline-secondary rounded-pill">
+        <i class="fas fa-arrow-left me-1"></i> Back to Rules
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-4">
+    <form action="/rules" method="POST" id="ruleForm">
+      <div class="mb-4">
+        <label for="name" class="form-label fw-medium">Rule Name</label>
+        <input type="text" class="form-control" id="name" name="name" required autocomplete="off">
+      </div>
+      
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="enabled" name="enabled" checked>
+          <label class="form-check-label fw-medium" for="enabled">Rule Enabled</label>
+          <small class="form-text text-muted d-block mt-1">When enabled, this rule will automatically be applied during transaction sync</small>
+        </div>
+      </div>
+      
+      <hr class="my-4">
+      
+      <h4 class="mb-3">
+        <i class="fas fa-filter text-primary me-2"></i>Conditions
+      </h4>
+      <p class="text-muted mb-4">Define when this rule should apply to transactions</p>
+      
+      <div id="conditions-container">
+        <div class="condition-row mb-3 p-3 bg-light rounded">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Field</label>
+              <select class="form-select" name="conditions[0][field]" required>
+                <option value="transaction_name">Transaction Name</option>
+                <option value="transaction_amount">Transaction Amount</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Operator</label>
+              <select class="form-select operator-select" name="conditions[0][operator]" required>
+                <option value="contains" data-field-type="string">Contains</option>
+                <option value="equals" data-field-type="string">Equals</option>
+                <option value="equals" data-field-type="number">Equals</option>
+                <option value="greater_than" data-field-type="number">Greater Than</option>
+                <option value="greater_than_or_equal" data-field-type="number">Greater Than Or Equal</option>
+                <option value="less_than" data-field-type="number">Less Than</option>
+                <option value="less_than_or_equal" data-field-type="number">Less Than Or Equal</option>
+              </select>
+            </div>
+            
+            <div class="col-md-5">
+              <label class="form-label small text-muted">Value</label>
+              <input type="text" class="form-control" name="conditions[0][value]" required>
+            </div>
+            
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="button" class="btn btn-outline-danger rounded-circle remove-condition" disabled>
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <button type="button" class="btn btn-outline-primary rounded-pill" id="add-condition">
+          <i class="fas fa-plus me-1"></i> Add Condition
+        </button>
+      </div>
+      
+      <hr class="my-4">
+      
+      <h4 class="mb-3">
+        <i class="fas fa-magic text-primary me-2"></i>Actions
+      </h4>
+      <p class="text-muted mb-4">Define what should happen when conditions are met</p>
+      
+      <div id="actions-container">
+        <div class="action-row mb-3 p-3 bg-light rounded">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Action Type</label>
+              <select class="form-select" name="actions[0][type]" required>
+                <option value="set_transaction_category">Assign Category</option>
+              </select>
+            </div>
+            
+            <div class="col-md-8">
+              <label class="form-label small text-muted">Category</label>
+              <select class="form-select" name="actions[0][value]" required>
+                <option value="">Select a category</option>
+                <% if (categories && categories.length > 0) { %>
+                  <% categories.forEach(category => { %>
+                    <option value="<%= category.id %>"><%= category.name %></option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="button" class="btn btn-outline-danger rounded-circle remove-action" disabled>
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <button type="button" class="btn btn-outline-primary rounded-pill" id="add-action">
+          <i class="fas fa-plus me-1"></i> Add Action
+        </button>
+      </div>
+      
+      <hr class="my-4">
+      
+      <div class="d-flex justify-content-end">
+        <a href="/rules" class="btn btn-outline-secondary rounded-pill me-2">
+          <i class="fas fa-times me-1"></i> Cancel
+        </a>
+        <button type="submit" class="btn btn-primary rounded-pill">
+          <i class="fas fa-save me-1"></i> Create Rule
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof setupRuleForm === 'function') {
+      setupRuleForm();
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

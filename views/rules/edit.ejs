@@ -1,0 +1,378 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="display-6 mb-3">Edit Rule: <%= rule.name %></h1>
+    <div class="d-flex justify-content-end">
+      <a href="/rules" class="btn btn-outline-secondary rounded-pill">
+        <i class="fas fa-arrow-left me-1"></i> Back to Rules
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-4">
+    <form action="/rules/<%= rule.id %>/update" method="POST" id="ruleForm">
+      <!-- Hidden field for rule ID -->
+      <input type="hidden" name="id" value="<%= rule.id %>">
+      
+      <div class="mb-4">
+        <label for="name" class="form-label fw-medium">Rule Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="<%= rule.name %>" required autocomplete="off">
+      </div>
+      
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="enabled" name="enabled" <%= rule.enabled ? 'checked' : '' %>>
+          <label class="form-check-label fw-medium" for="enabled">Rule Enabled</label>
+          <small class="form-text text-muted d-block mt-1">When enabled, this rule will automatically be applied during transaction sync</small>
+        </div>
+      </div>
+      
+      <hr class="my-4">
+      
+      <h4 class="mb-3">
+        <i class="fas fa-filter text-primary me-2"></i>Conditions
+      </h4>
+      <p class="text-muted mb-4">Define when this rule should apply to transactions</p>
+      
+      <div id="deleted-conditions-container">
+      </div>
+      
+      <div id="conditions-container">
+        <% if (rule.conditions && rule.conditions.length > 0) { %>
+          <% rule.conditions.forEach((condition, index) => { %>
+            <div class="condition-row mb-3 p-3 bg-light rounded">
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <label class="form-label small text-muted">Field</label>
+                  <select class="form-select" name="conditions[<%= index %>][field]" required>
+                    <option value="transaction_name" <%= condition.field === 'transaction_name' ? 'selected' : '' %>>Transaction Name</option>
+                    <option value="transaction_amount" <%= condition.field === 'transaction_amount' ? 'selected' : '' %>>Transaction Amount</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label small text-muted">Operator</label>
+                  <select class="form-select operator-select" name="conditions[<%= index %>][operator]" required>
+                    <option value="contains" data-field-type="string" <%= condition.operator === 'contains' || condition.operator === 'like' ? 'selected' : '' %>>Contains</option>
+                    <option value="equals" data-field-type="string" <%= (condition.operator === 'equals' || condition.operator === '=') && condition.field === 'transaction_name' ? 'selected' : '' %>>Equals</option>
+                    <option value="equals" data-field-type="number" <%= (condition.operator === 'equals' || condition.operator === '=') && condition.field === 'transaction_amount' ? 'selected' : '' %>>Equals</option>
+                    <option value="greater_than" data-field-type="number" <%= condition.operator === 'greater_than' || condition.operator === '>' ? 'selected' : '' %>>Greater Than</option>
+                    <option value="greater_than_or_equal" data-field-type="number" <%= condition.operator === 'greater_than_or_equal' || condition.operator === '>=' ? 'selected' : '' %>>Greater Than Or Equal</option>
+                    <option value="less_than" data-field-type="number" <%= condition.operator === 'less_than' || condition.operator === '<' ? 'selected' : '' %>>Less Than</option>
+                    <option value="less_than_or_equal" data-field-type="number" <%= condition.operator === 'less_than_or_equal' || condition.operator === '<=' ? 'selected' : '' %>>Less Than Or Equal</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-5">
+                  <label class="form-label small text-muted">Value</label>
+                  <input type="text" class="form-control" name="conditions[<%= index %>][value]" value="<%= condition.value %>" required>
+                  <% if (condition.id) { %>
+                    <input type="hidden" name="conditions[<%= index %>][id]" value="<%= condition.id %>">
+                  <% } %>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                  <button type="button" class="btn btn-outline-danger rounded-circle remove-condition" data-id="<%= condition.id || '' %>" <%= rule.conditions.length <= 1 ? 'disabled' : '' %>>
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="condition-row mb-3 p-3 bg-light rounded">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label small text-muted">Field</label>
+                <select class="form-select" name="conditions[0][field]" required>
+                  <option value="transaction_name">Transaction Name</option>
+                  <option value="transaction_amount">Transaction Amount</option>
+                </select>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label small text-muted">Operator</label>
+                <select class="form-select operator-select" name="conditions[0][operator]" required>
+                  <option value="contains" data-field-type="string">Contains</option>
+                  <option value="equals" data-field-type="string">Equals</option>
+                  <option value="equals" data-field-type="number">Equals</option>
+                  <option value="greater_than" data-field-type="number">Greater Than</option>
+                  <option value="greater_than_or_equal" data-field-type="number">Greater Than Or Equal</option>
+                  <option value="less_than" data-field-type="number">Less Than</option>
+                  <option value="less_than_or_equal" data-field-type="number">Less Than Or Equal</option>
+                </select>
+              </div>
+              
+              <div class="col-md-5">
+                <label class="form-label small text-muted">Value</label>
+                <input type="text" class="form-control" name="conditions[0][value]" required>
+              </div>
+              
+              <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger rounded-circle remove-condition" disabled>
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+      
+      <div class="mb-4">
+        <button type="button" class="btn btn-outline-primary rounded-pill" id="add-condition">
+          <i class="fas fa-plus me-1"></i> Add Condition
+        </button>
+      </div>
+      
+      <hr class="my-4">
+      
+      <h4 class="mb-3">
+        <i class="fas fa-magic text-primary me-2"></i>Actions
+      </h4>
+      <p class="text-muted mb-4">Define what should happen when conditions are met</p>
+      
+      <div id="deleted-actions-container">
+      </div>
+      
+      <div id="actions-container">
+        <% if (rule.actions && rule.actions.length > 0) { %>
+          <% rule.actions.forEach((action, index) => { %>
+            <div class="action-row mb-3 p-3 bg-light rounded">
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <label class="form-label small text-muted">Action Type</label>
+                  <select class="form-select" name="actions[<%= index %>][type]" required>
+                    <option value="set_transaction_category" <%= action.action_type === 'set_transaction_category' ? 'selected' : '' %>>Assign Category</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-8">
+                  <label class="form-label small text-muted">Category</label>
+                  <select class="form-select" name="actions[<%= index %>][value]" required>
+                    <option value="">Select a category</option>
+                    <% if (categories && categories.length > 0) { %>
+                      <% categories.forEach(category => { %>
+                        <option value="<%= category.id %>" <%= action.action_value === category.id.toString() ? 'selected' : '' %>><%= category.name %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                  <% if (action.id) { %>
+                    <input type="hidden" name="actions[<%= index %>][id]" value="<%= action.id %>">
+                  <% } %>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                  <button type="button" class="btn btn-outline-danger rounded-circle remove-action" data-id="<%= action.id || '' %>" <%= rule.actions.length <= 1 ? 'disabled' : '' %>>
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="action-row mb-3 p-3 bg-light rounded">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label small text-muted">Action Type</label>
+                <select class="form-select" name="actions[0][type]" required>
+                  <option value="set_transaction_category">Assign Category</option>
+                </select>
+              </div>
+              
+              <div class="col-md-8">
+                <label class="form-label small text-muted">Category</label>
+                <select class="form-select" name="actions[0][value]" required>
+                  <option value="">Select a category</option>
+                  <% if (categories && categories.length > 0) { %>
+                    <% categories.forEach(category => { %>
+                      <option value="<%= category.id %>"><%= category.name %></option>
+                    <% }); %>
+                  <% } %>
+                </select>
+              </div>
+              
+              <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger rounded-circle remove-action" disabled>
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+      
+      <div class="mb-4">
+        <button type="button" class="btn btn-outline-primary rounded-pill" id="add-action">
+          <i class="fas fa-plus me-1"></i> Add Action
+        </button>
+      </div>
+      
+      <hr class="my-4">
+      
+      <div class="d-flex justify-content-end">
+        <a href="/rules" class="btn btn-outline-secondary rounded-pill me-2">
+          <i class="fas fa-times me-1"></i> Cancel
+        </a>
+        <button type="submit" class="btn btn-primary rounded-pill">
+          <i class="fas fa-save me-1"></i> Update Rule
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Script for handling form submission and delete operations -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ruleForm = document.getElementById('ruleForm');
+    const deletedConditionsContainer = document.getElementById('deleted-conditions-container');
+    const deletedActionsContainer = document.getElementById('deleted-actions-container');
+
+    if (typeof setupRuleForm === 'function') {
+      setupRuleForm();
+    }
+    
+    // Override the remove condition functionality
+    document.addEventListener('click', function(e) {
+      const removeCondBtn = e.target.closest('.remove-condition');
+      if (removeCondBtn && !removeCondBtn.disabled) {
+        const conditionRow = removeCondBtn.closest('.condition-row');
+        const conditionId = removeCondBtn.getAttribute('data-id');
+        
+        if (conditionId && conditionId.trim() !== '') {
+          console.log('Deleting condition ID:', conditionId);
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'deletedConditionIds';
+          hiddenInput.value = conditionId;
+          deletedConditionsContainer.appendChild(hiddenInput);
+        }
+        
+        conditionRow.remove();
+        
+        const remainingRows = document.querySelectorAll('.condition-row');
+        if (remainingRows.length === 1) {
+          remainingRows[0].querySelector('.remove-condition').disabled = true;
+        }
+        
+        renumberFormElements('conditions');
+      }
+    });
+    
+    // Override the remove action functionality
+    document.addEventListener('click', function(e) {
+      const removeActionBtn = e.target.closest('.remove-action');
+      if (removeActionBtn && !removeActionBtn.disabled) {
+        const actionRow = removeActionBtn.closest('.action-row');
+        const actionId = removeActionBtn.getAttribute('data-id');
+        
+        if (actionId && actionId.trim() !== '') {
+          console.log('Deleting action ID:', actionId);
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'deletedActionIds';
+          hiddenInput.value = actionId;
+          deletedActionsContainer.appendChild(hiddenInput);
+        }
+        
+        actionRow.remove();
+        
+        const remainingRows = document.querySelectorAll('.action-row');
+        if (remainingRows.length === 1) {
+          remainingRows[0].querySelector('.remove-action').disabled = true;
+        }
+        
+        renumberFormElements('actions');
+      }
+    });
+    
+    function renumberFormElements(prefix) {
+      const container = document.getElementById(`${prefix}-container`);
+      const rows = container.querySelectorAll(`.${prefix.slice(0, -1)}-row`);
+      
+      rows.forEach((row, index) => {
+        row.querySelectorAll(`[name^="${prefix}["]`).forEach(input => {
+          const nameParts = input.name.split('[');
+          if (nameParts.length < 2) return;
+          
+          const match = input.name.match(/\[\d+\](.*)/);
+          if (!match) return;
+          
+          const endPart = match[1];
+          input.name = `${prefix}[${index}]${endPart}`;
+        });
+      });
+    }
+    
+    ruleForm.addEventListener('submit', function(e) {
+      const conditionRows = document.querySelectorAll('.condition-row');
+      const actionRows = document.querySelectorAll('.action-row');
+      
+      if (conditionRows.length === 0 || actionRows.length === 0) {
+        e.preventDefault();
+        alert('Rules must have at least one condition and one action.');
+        return false;
+      }
+      
+      let hasEmptyFields = false;
+      
+      document.querySelectorAll('#ruleForm [required]:not([disabled])').forEach(field => {
+        if (!field.value || field.value.trim() === '') {
+          hasEmptyFields = true;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+      
+      if (hasEmptyFields) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+      }
+      
+      const deletedCondIds = [];
+      document.querySelectorAll('input[name="deletedConditionIds"]').forEach(input => {
+        if (input.value && input.value.trim() !== '') {
+          deletedCondIds.push(input.value.trim());
+        }
+        input.remove();
+      });
+      
+      deletedCondIds.forEach((id, index) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `deletedConditionIds[${index}]`;
+        input.value = id;
+        ruleForm.appendChild(input);
+      });
+      
+      const deletedActIds = [];
+      document.querySelectorAll('input[name="deletedActionIds"]').forEach(input => {
+        if (input.value && input.value.trim() !== '') {
+          deletedActIds.push(input.value.trim());
+        }
+        input.remove();
+      });
+      
+      deletedActIds.forEach((id, index) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `deletedActionIds[${index}]`;
+        input.value = id;
+        ruleForm.appendChild(input);
+      });
+      
+      console.log('Form is valid, submitting with:');
+      console.log('- Deleted condition IDs:', deletedCondIds);
+      console.log('- Deleted action IDs:', deletedActIds);
+      
+      return true;
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

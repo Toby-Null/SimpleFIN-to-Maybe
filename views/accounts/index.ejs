@@ -1,0 +1,134 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="display-6 mb-3">Accounts</h1>
+  </div>
+</div>
+
+<% const accountTypes = [
+  { type: 'simplefin', display: 'SimpleFIN Accounts' },
+  { type: 'maybe', display: 'Maybe Accounts' }
+]; %>
+
+<% accountTypes.forEach(accountType => { %>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="fs-4 mb-0"><%= accountType.display %></h2>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th class="text-center">Currency</th>
+              <th class="text-center">Status</th>
+              <% if (accountType.type === 'maybe') { %>
+                <th class="text-center">Account Type</th>
+              <% } %>
+              <th class="text-center">Last Updated</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% const accounts = accountType.type === 'simplefin' ? simplefinAccounts : maybeAccounts; %>
+            <% if (accounts && accounts.length > 0) { %>
+              <% accounts.forEach(account => { %>
+                <tr>
+                  <td class="align-middle">
+                    <div class="fw-medium"><%= account.display_name %></div>
+                  </td>
+                  <td class="text-center align-middle"><%= account.currency || 'USD' %></td>
+                  <td class="text-center align-middle">
+                    <% if (account.in_use) { %>
+                      <a href="/linkages" class="text-decoration-none">
+                        <span class="badge bg-success">
+                          <i class="fas fa-link"></i>
+                        </span>
+                      </a>
+                    <% } else { %>
+                      <span class="badge bg-secondary">
+                        <i class="fas fa-unlink"></i>
+                      </span>
+                    <% } %>
+                  </td>
+                  <% if (accountType.type === 'maybe') { %>
+                    <td class="text-center align-middle"><%= account.accountable_type %></td>
+                  <% } %>
+                  <td class="text-center align-middle">
+                    <div><%= new Date(account.updated_at).toLocaleDateString() %></div>
+                    <small class="text-muted"><%= new Date(account.updated_at).toLocaleTimeString() %></small>
+                  </td>
+                  <td class="text-center align-middle">
+                    <form id="delete-form-<%= account.id %>" action="/accounts/<%= account.id %>/delete" method="POST" class="d-inline">
+                      <input type="hidden" name="force" id="force-<%= account.id %>" value="false">
+                      <button type="button" class="btn btn-sm btn-outline-danger" 
+                        onclick="confirmAccountDeletion('<%= account.id %>', '<%= account.display_name %>', <%= account.in_use %>)">
+                        <i class="fa-solid fa-trash"></i> Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr>
+                <td colspan="<%= accountType.type === 'maybe' ? 6 : 5 %>" class="text-center py-4">
+                  <div class="text-muted">
+                    <i class="far fa-folder-open mb-2" style="font-size: 24px;"></i>
+                    <p>No accounts found</p>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% }); %>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title">Delete Account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p>Are you sure you want to delete "<span id="accountName" class="fw-medium"></span>"?</p>
+        <div id="linkageWarning" class="alert alert-warning d-none">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          This account is currently linked. Deleting it will remove all associated linkages.
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmAccountDeletion(id, name, inUse) {
+  const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  document.getElementById('accountName').textContent = name;
+  
+  // Show warning if account is in use
+  if (inUse) {
+    document.getElementById('linkageWarning').classList.remove('d-none');
+  } else {
+    document.getElementById('linkageWarning').classList.add('d-none');
+  }
+  
+  document.getElementById('confirmDeleteBtn').onclick = function() {
+    document.getElementById(`force-${id}`).value = 'true';
+    document.getElementById(`delete-form-${id}`).submit();
+  };
+  
+  modal.show();
+}
+</script>
+
+<%- include('../partials/footer') %>

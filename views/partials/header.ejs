@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - SimpleFIN to Maybe</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- System fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  <!-- CSRF Token for AJAX requests -->
+  <meta name="csrf-token" content="">
+</head>
+<body class="pineapple-theme">
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center py-2" href="/">
+        <img src="/images/SimpleFIN.svg" alt="SimpleFIN" height="24" class="me-2">
+        <span class="text-muted mx-2" style="font-size: 16px; font-weight: 500;">to</span>
+        <img src="/images/Maybe.svg" alt="Maybe" height="24" class="ms-1">
+      </a>
+      
+      <button class="navbar-toggler border-0 focus-ring-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item px-3">
+            <a class="nav-link <%= title === 'Account Linkages' ? 'active' : '' %>" href="/">
+              <span>Home</span>
+              <% if (title === 'Account Linkages') { %>
+                <div class="nav-indicator"></div>
+              <% } %>
+            </a>
+          </li>
+          <li class="nav-item px-3">
+            <a class="nav-link <%= title === 'Accounts' ? 'active' : '' %>" href="/accounts">
+              <span>Accounts</span>
+              <% if (title === 'Accounts') { %>
+                <div class="nav-indicator"></div>
+              <% } %>
+            </a>
+          </li>
+          <li class="nav-item px-3">
+            <a class="nav-link <%= title === 'Transaction Rules' ? 'active' : '' %>" href="/rules">
+              <span>Rules</span>
+              <% if (title === 'Transaction Rules') { %>
+                <div class="nav-indicator"></div>
+              <% } %>
+            </a>
+          </li>
+          <li class="nav-item px-3">
+            <a class="nav-link <%= title === 'Settings' ? 'active' : '' %>" href="/settings">
+              <span>Settings</span>
+              <% if (title === 'Settings') { %>
+                <div class="nav-indicator"></div>
+              <% } %>
+            </a>
+          </li>
+        </ul>
+        
+        <div class="navbar-nav">
+          <div class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="https://github.com/Toby-Null/Simplefin-to-Maybe" target="_blank">
+              <i class="fab fa-github me-2"></i>
+              <span class="d-none d-lg-inline" style="font-weight: 500;">GitHub</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container main-content mt-5 pt-4">
+    <% if(typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+      <div class="alert alert-success alert-dismissible fade show">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-check-circle me-3"></i>
+          <div><%= success_msg %></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    
+    <% if(typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-exclamation-circle me-3"></i>
+          <div><%= error_msg %></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    
+    <% if(typeof info_msg !== 'undefined' && info_msg.length > 0) { %>
+      <div class="alert alert-info alert-dismissible fade show">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-info-circle me-3"></i>
+          <div><%= info_msg %></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>

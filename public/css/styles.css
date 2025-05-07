@@ -1,0 +1,358 @@
+/* Pineapple Theme (Apple-like UI) */
+body.pineapple-theme {
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+  font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.47059;
+  letter-spacing: -0.022em;
+  font-weight: 400;
+}
+
+/* Navbar styling */
+.pineapple-theme .navbar {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  color: #1d1d1f;
+}
+
+.pineapple-theme .navbar-dark .navbar-nav .nav-link {
+  color: #1d1d1f;
+}
+
+.pineapple-theme .navbar-dark .navbar-nav .nav-link.active {
+  color: #06c;
+  font-weight: 500;
+}
+
+.pineapple-theme .navbar-brand {
+  color: #1d1d1f;
+}
+
+/* Card styling */
+.pineapple-theme .card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.pineapple-theme .card-header {
+  font-weight: 500;
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 15px 20px;
+}
+
+/* Button styling */
+.pineapple-theme .btn {
+  border-radius: 980px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+}
+
+.pineapple-theme .btn-primary {
+  background-color: #06c;
+  border-color: #06c;
+}
+
+.pineapple-theme .btn-primary:hover {
+  background-color: #0055b3;
+  border-color: #0055b3;
+}
+
+.pineapple-theme .btn-success {
+  background-color: #34c759;
+  border-color: #34c759;
+}
+
+.pineapple-theme .btn-success:hover {
+  background-color: #2db14d;
+  border-color: #2db14d;
+}
+
+.pineapple-theme .btn-danger {
+  background-color: #ff3b30;
+  border-color: #ff3b30;
+}
+
+.pineapple-theme .btn-danger:hover {
+  background-color: #e6352b;
+  border-color: #e6352b;
+}
+
+.pineapple-theme .btn-outline-primary {
+  border-color: #06c;
+  color: #06c;
+}
+
+.pineapple-theme .btn-outline-primary:hover {
+  background-color: #06c;
+  color: #fff;
+}
+
+.pineapple-theme .btn-secondary {
+  background-color: #f5f5f7;
+  border-color: #d2d2d7;
+  color: #1d1d1f;
+}
+
+.pineapple-theme .btn-secondary:hover {
+  background-color: #e8e8ed;
+}
+
+/* Background colors */
+.pineapple-theme .bg-danger {
+  background-color: #ff3b30 !important;
+}
+
+.pineapple-theme .bg-success {
+  background-color: #34c759 !important;
+}
+
+.pineapple-theme .bg-primary {
+  background-color: #06c !important;
+}
+
+.pineapple-theme .bg-light {
+  background-color: #f5f5f7 !important;
+}
+
+/* Table styling */
+.pineapple-theme .table {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.pineapple-theme .table th {
+  font-weight: 500;
+  color: #6e6e73;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+}
+
+.pineapple-theme .table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.pineapple-theme .table-hover tbody tr:hover {
+  background-color: rgba(0, 102, 204, 0.04);
+}
+
+/* Form controls */
+.pineapple-theme .form-control,
+.pineapple-theme .form-select {
+  border-radius: 9px;
+  border: 1px solid #d2d2d7;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.pineapple-theme .form-control:focus,
+.pineapple-theme .form-select:focus {
+  border-color: #06c;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+  outline: none;
+}
+
+.pineapple-theme .form-label {
+  font-weight: 500;
+  color: #6e6e73;
+  margin-bottom: 6px;
+}
+
+/* Main content */
+.main-content {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+/* Toggle switch styling */
+.pineapple-theme .form-check-input {
+  height: 20px;
+  width: 36px;
+  border-radius: 999px;
+}
+
+.pineapple-theme .form-check-input:checked {
+  background-color: #34c759;
+  border-color: #34c759;
+}
+
+.pineapple-theme .form-check-input:not(:checked) {
+  background-color: #e8e8ed;
+  border-color: #e8e8ed;
+}
+
+/* Tooltip styling */
+.tooltip-icon {
+  cursor: help;
+  color: #86868b;
+}
+
+/* Sync status indicators */
+.sync-status {
+  height: 24px;
+  width: 24px;
+}
+
+/* Text styling */
+.pineapple-theme .text-danger {
+  color: #ff3b30 !important;
+}
+
+.pineapple-theme .text-success {
+  color: #34c759 !important;
+}
+
+.pineapple-theme .text-primary {
+  color: #06c !important;
+}
+
+.pineapple-theme .text-muted {
+  color: #86868b !important;
+}
+
+/* Alert styling */
+.pineapple-theme .alert {
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.pineapple-theme .alert-success {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: #28a745;
+}
+
+.pineapple-theme .alert-danger {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.pineapple-theme .alert-info {
+  background-color: rgba(0, 102, 204, 0.1);
+  color: #06c;
+}
+
+/* Accordion styling */
+.pineapple-theme .accordion-button {
+  background-color: #fff;
+  font-weight: 500;
+  padding: 16px 20px;
+}
+
+.pineapple-theme .accordion-button:not(.collapsed) {
+  background-color: #f5f5f7;
+  color: #06c;
+}
+
+.pineapple-theme .accordion-button:focus {
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+.pineapple-theme .accordion-body {
+  padding: 20px;
+}
+
+/* Badge styling */
+.pineapple-theme .badge {
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 980px;
+}
+
+.pineapple-theme .badge.bg-success {
+  background-color: #34c759 !important;
+}
+
+.pineapple-theme .badge.bg-secondary {
+  background-color: #86868b !important;
+}
+
+/* Modal styling */
+.pineapple-theme .modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.pineapple-theme .modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+}
+
+.pineapple-theme .modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+}
+
+.pineapple-theme pre {
+  background-color: #f5f5f7;
+  border-radius: 9px;
+  padding: 15px;
+}
+
+/* Navigation indicator for active state - Apple style */
+.pineapple-theme .nav-indicator {
+  height: 2px;
+  background-color: #06c;
+  margin-top: 4px;
+  border-radius: 1px;
+}
+
+.pineapple-theme .navbar-nav .nav-link {
+  position: relative;
+  padding-bottom: 0.25rem;
+}
+
+.pineapple-theme .navbar-nav .nav-link.active {
+  color: #06c;
+}
+
+/* Enhanced navbar styling */
+.pineapple-theme .navbar {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.pineapple-theme .navbar-toggler:focus {
+  box-shadow: none;
+}
+
+/* Improved transition effects */
+.pineapple-theme .navbar-nav .nav-link {
+  transition: color 0.2s ease;
+}
+
+/* Enhanced navbar brand */
+.pineapple-theme .navbar-brand {
+  font-weight: 500;
+}
+
+/* Footer styling */
+.pineapple-theme .footer {
+  background-color: #f5f5f7;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 16px 0;
+  margin-top: 60px;
+}
+
+.pineapple-theme .footer a {
+  color: #06c;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.pineapple-theme .footer a:hover {
+  color: #0055b3;
+}
+

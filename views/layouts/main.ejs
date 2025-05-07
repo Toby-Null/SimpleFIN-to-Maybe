@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - SimpleFIN to Maybe</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="pineapple-theme">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <div class="d-flex align-items-center">
+          <img src="/images/SimpleFIN.svg" alt="SimpleFIN" height="30" class="me-2">
+          <i class="fas fa-arrow-right mx-2"></i>
+          <img src="/images/Maybe.svg" alt="Maybe" height="30">
+        </div>
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-3">
+          <li class="nav-item">
+            <a class="nav-link <%= title === 'Account Linkages' ? 'active' : '' %>" href="/">
+              <i class="fas fa-home me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= title === 'Accounts' ? 'active' : '' %>" href="/accounts">
+              <i class="fas fa-file-invoice-dollar me-1"></i> Accounts
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= title === 'Transaction Rules' ? 'active' : '' %>" href="/rules">
+              <i class="fas fa-filter me-1"></i> Rules
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= title === 'Settings' ? 'active' : '' %>" href="/settings">
+              <i class="fas fa-cog me-1"></i> Settings
+            </a>
+          </li>
+        </ul>
+        
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/Toby-Null/Simplefin-to-Maybe" target="_blank">
+              <i class="fab fa-github me-1"></i> SimpleFIN to Maybe
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <div class="container-fluid main-content mt-5 pt-4">
+    <!-- Flash Messages -->
+    <% if(typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+      <div class="alert alert-success alert-dismissible fade show">
+        <%= success_msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    
+    <% if(typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <%= error_msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    
+    <% if(typeof info_msg !== 'undefined' && info_msg.length > 0) { %>
+      <div class="alert alert-info alert-dismissible fade show">
+        <%= info_msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    
+    <%- body %>
+  </div>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JS -->
+  <script src="/js/main.js"></script>
+</body>
+</html>

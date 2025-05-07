@@ -1,0 +1,1169 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="display-6 mb-3">Settings</h1>
+    <p class="text-muted">Configure your SimpleFIN to Maybe connection settings</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">
+      <i class="fas fa-link text-primary me-2"></i>SimpleFIN Settings
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Setting</th>
+            <th></th>
+            <th class="text-end">Value</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+            const username = settings.find(s => s.key === 'simplefin_username');
+            const password = settings.find(s => s.key === 'simplefin_password');
+            const hasCredentials = username && username.value && password && password.value;
+            
+            let setupTokenSetting = settings.find(s => s.key === 'simplefin_setup_token') || {
+              key: 'simplefin_setup_token',
+              display_name: 'SimpleFIN Setup Token',
+              value: ''
+            };
+          %>
+          
+          <% if (!hasCredentials) { %>
+            <tr class="table-primary">
+              <td>
+                <%= setupTokenSetting.display_name %> 
+                <i class="fas fa-info-circle text-muted tooltip-icon" title="Enter your SimpleFIN Setup Token to automatically configure credentials"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-key text-warning"></i>
+              </td>
+              <td class="text-end">
+                <% if (setupTokenSetting.value) { %>
+                  <span class="text-secondary">*********</span>
+                <% } else { %>
+                  <span class="text-danger">undefined</span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-primary rounded-pill openModalBtn" 
+                  data-display-name="<%= setupTokenSetting.display_name %>"
+                  data-key="<%= setupTokenSetting.key %>"
+                  data-value="<%= setupTokenSetting.value || '' %>"
+                >
+                  <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+              </td>
+            </tr>
+          <% } %>
+          
+          <% if (username) { %>
+            <tr>
+              <td>
+                <%= username.display_name %> 
+                <i class="fas fa-info-circle text-muted tooltip-icon" title="SimpleFIN username (can be auto-filled from Setup Token)"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-user text-muted"></i>
+              </td>
+              <td class="text-end">
+                <% if (username.value) { %>
+                  <span class="text-secondary">*********</span>
+                <% } else { %>
+                  <span class="text-danger">undefined</span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-primary rounded-pill openModalBtn" 
+                  data-display-name="<%= username.display_name %>"
+                  data-key="<%= username.key %>"
+                  data-value="<%= username.value || '' %>"
+                >
+                  <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+              </td>
+            </tr>
+          <% } %>
+          
+          <% if (password) { %>
+            <tr>
+              <td>
+                <%= password.display_name %> 
+                <i class="fas fa-info-circle text-muted tooltip-icon" title="SimpleFIN password (can be auto-filled from Setup Token)"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-lock text-muted"></i>
+              </td>
+              <td class="text-end">
+                <% if (password.value) { %>
+                  <span class="text-secondary">*********</span>
+                <% } else { %>
+                  <span class="text-danger">undefined</span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-primary rounded-pill openModalBtn" 
+                  data-display-name="<%= password.display_name %>"
+                  data-key="<%= password.key %>"
+                  data-value="<%= password.value || '' %>"
+                >
+                  <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+              </td>
+            </tr>
+          <% } %>
+          
+          <% if (hasCredentials && setupTokenSetting) { %>
+            <tr>
+              <td>
+                <%= setupTokenSetting.display_name %> 
+                <i class="fas fa-info-circle text-muted tooltip-icon" title="Alternative setup method - will replace existing credentials"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-key text-muted"></i>
+              </td>
+              <td class="text-end">
+                <% if (setupTokenSetting.value) { %>
+                  <span class="text-secondary">*********</span>
+                <% } else { %>
+                  <span class="text-muted">Not used</span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-outline-secondary rounded-pill openModalBtn" 
+                  data-display-name="<%= setupTokenSetting.display_name %>"
+                  data-key="<%= setupTokenSetting.key %>"
+                  data-value="<%= setupTokenSetting.value || '' %>"
+                >
+                  <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+              </td>
+            </tr>
+          <% } %>
+          
+          <tr>
+            <td>Accounts Retrieved</td>
+            <td class="text-center">
+              <i class="fas fa-arrow-right text-muted"></i>
+            </td>
+            <td class="text-end">
+              <a href="/accounts" id="simplefin-count-display" class="text-primary fw-bold"></a>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-secondary rounded-pill" disabled>
+                <i class="fas fa-ban me-1"></i> N/A
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="alert alert-info persistent-alert rounded-3 mt-3">
+      <div class="d-flex">
+        <div class="flex-shrink-0">
+          <i class="fas fa-info-circle fa-lg mt-1"></i>
+        </div>
+        <div class="flex-grow-1 ms-3">
+          <% if (!hasCredentials) { %>
+            Enter your SimpleFIN Setup Token to automatically configure username and password.
+            This is the recommended method for setting up SimpleFIN access.
+          <% } else { %>
+            SimpleFIN is configured with username and password. You can test the connection below.
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-flex mt-3">
+      <button class="btn btn-primary rounded-pill" id="test_simplefin_button">
+        <i class="fas fa-sync-alt me-1"></i> Retrieve SimpleFIN Accounts
+      </button>
+      <div class="d-inline-flex align-items-center ms-2">
+        <i id="simplefin_loading_spinner" class="fas fa-spinner fa-spin text-primary" style="display: none;"></i>
+      </div>
+    </div>
+    <div id="simplefin_test_result" class="mt-2"></div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">
+      <i class="fas fa-database text-primary me-2"></i>Maybe Settings
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Setting</th>
+            <th></th>
+            <th class="text-end">Value</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+            const maybeSettingKeys = [
+              'maybe_postgres_host',
+              'maybe_postgres_port',
+              'maybe_postgres_db',
+              'maybe_postgres_user',
+              'maybe_postgres_password'
+            ];
+            
+            const maybeSettings = maybeSettingKeys
+              .map(key => settings.find(s => s.key === key))
+              .filter(setting => setting);
+          %>
+          
+          <% maybeSettings.forEach(setting => { %>
+            <tr>
+              <td>
+                <%= setting.display_name %> 
+                <i class="fas fa-info-circle text-muted tooltip-icon" title="Connection settings for Maybe database"></i>
+              </td>
+              <td class="text-center">
+                <% if (setting.key === 'maybe_postgres_host') { %>
+                  <i class="fas fa-server text-muted"></i>
+                <% } else if (setting.key === 'maybe_postgres_port') { %>
+                  <i class="fas fa-plug text-muted"></i>
+                <% } else if (setting.key === 'maybe_postgres_db') { %>
+                  <i class="fas fa-database text-muted"></i>
+                <% } else if (setting.key === 'maybe_postgres_user') { %>
+                  <i class="fas fa-user text-muted"></i>
+                <% } else if (setting.key === 'maybe_postgres_password') { %>
+                  <i class="fas fa-lock text-muted"></i>
+                <% } else { %>
+                  <i class="fas fa-cog text-muted"></i>
+                <% } %>
+              </td>
+              <td class="text-end">
+                <% if (setting.key === 'maybe_postgres_password' && setting.value) { %>
+                  <span class="text-secondary">*********</span>
+                <% } else { %>
+                  <%= setting.value || '<span class="text-danger">undefined</span>' %>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <button 
+                  class="btn btn-sm btn-primary rounded-pill openModalBtn" 
+                  data-display-name="<%= setting.display_name %>"
+                  data-key="<%= setting.key %>"
+                  data-value="<%= setting.value || '' %>"
+                >
+                  <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+              </td>
+            </tr>
+          <% }); %>
+          
+          <tr>
+            <td>Accounts Retrieved</td>
+            <td class="text-center">
+              <i class="fas fa-arrow-right text-muted"></i>
+            </td>
+            <td class="text-end">
+              <a href="/accounts" id="maybe-count-display" class="text-primary fw-bold"></a>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-secondary rounded-pill" disabled>
+                <i class="fas fa-ban me-1"></i> N/A
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="alert alert-info persistent-alert rounded-3 mt-3">
+      <div class="d-flex">
+        <div class="flex-shrink-0">
+          <i class="fas fa-info-circle fa-lg mt-1"></i>
+        </div>
+        <div class="flex-grow-1 ms-3">
+          These settings connect to your Maybe database. Make sure you have direct access to the Maybe PostgreSQL database.
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-flex mt-3">
+      <button class="btn btn-primary rounded-pill" id="test_maybe_button">
+        <i class="fas fa-sync-alt me-1"></i> Retrieve Maybe Accounts
+      </button>
+      <div class="d-inline-flex align-items-center ms-2">
+        <i id="maybe_loading_spinner" class="fas fa-spinner fa-spin text-primary" style="display: none;"></i>
+      </div>
+    </div>
+    <div id="maybe_test_result" class="mt-2"></div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">
+      <i class="fas fa-clock text-primary me-2"></i>Scheduling Settings
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <label for="lookback_days" class="form-label fw-medium">Lookback Days</label>
+        <% 
+          const lookbackSetting = settings.find(s => s.key === 'lookback_days');
+          const lookbackValue = lookbackSetting ? lookbackSetting.value : '7';
+        %>
+        <div class="input-group">
+          <input 
+            type="number" 
+            class="form-control" 
+            id="lookback_days" 
+            value="<%= lookbackValue %>" 
+            min="1" 
+            max="365"
+          >
+          <button 
+            class="btn btn-primary rounded-end" 
+            id="save-lookback" 
+            data-setting-key="lookback_days"
+          >
+            <i class="fas fa-save me-1"></i> Save
+          </button>
+        </div>
+        <div class="form-text">Number of days in the past to look for transactions</div>
+      </div>
+    </div>
+  
+    <hr class="my-4">
+  
+    <div class="mb-4">
+      <h5 class="fw-medium">Sync Schedule</h5>
+      <p class="text-muted">Set how often you want to automatically sync accounts</p>
+      
+      <% 
+        let scheduleInfo = {
+          interval: 'daily',
+          intervalValue: 1,
+          timeHour: 12,
+          timeMinute: 0,
+          amPm: 'AM'
+        };
+        
+        if (typeof locals.scheduleInfo !== 'undefined') {
+          scheduleInfo = locals.scheduleInfo;
+        }
+      %>
+  
+      <div class="mb-4">
+        <div class="card border-light bg-light">
+          <div class="card-body">
+            <div class="row align-items-center g-3">
+              <div class="col-auto">
+                <label for="schedule-interval" class="form-label mb-0 fw-medium">Every</label>
+              </div>
+              
+              <div class="col-auto">
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="schedule-value" 
+                  value="<%= scheduleInfo.intervalValue %>" 
+                  min="1" 
+                  max="24"
+                  style="width: 70px;"
+                >
+              </div>
+              
+              <div class="col-auto">
+                <select class="form-select" id="schedule-interval">
+                  <option value="hourly" <%= scheduleInfo.interval === 'hourly' ? 'selected' : '' %>>Hour(s)</option>
+                  <option value="daily" <%= scheduleInfo.interval === 'daily' ? 'selected' : '' %>>Day(s)</option>
+                  <option value="weekly" <%= scheduleInfo.interval === 'weekly' ? 'selected' : '' %>>Week(s)</option>
+                  <option value="monthly" <%= scheduleInfo.interval === 'monthly' ? 'selected' : '' %>>Month(s)</option>
+                </select>
+              </div>
+              
+              <div class="col-auto schedule-time-group d-flex align-items-center">
+                <span class="fw-medium">AT</span>
+              </div>
+  
+              <div class="col-auto schedule-time-group">
+                <select class="form-select" id="schedule-hour" style="width: 80px;">
+                  <% for (let i = 1; i <= 12; i++) { %>
+                    <option value="<%= i %>" <%= scheduleInfo.timeHour === i ? 'selected' : '' %>><%= i %></option>
+                  <% } %>
+                </select>
+              </div>
+  
+              <div class="col-auto schedule-time-group">
+                <select class="form-select" id="schedule-minute" style="width: 80px;">
+                  <% for (let i = 0; i < 60; i += 5) { %>
+                    <option value="<%= i %>" <%= scheduleInfo.timeMinute === i ? 'selected' : '' %>><%= String(i).padStart(2, '0') %></option>
+                  <% } %>
+                </select>
+              </div>
+  
+              <div class="col-auto schedule-time-group">
+                <select class="form-select" id="schedule-ampm" style="width: 80px;">
+                  <option value="AM" <%= scheduleInfo.amPm === 'AM' ? 'selected' : '' %>>AM</option>
+                  <option value="PM" <%= scheduleInfo.amPm === 'PM' ? 'selected' : '' %>>PM</option>
+                </select>
+              </div>
+              
+              <div class="col-auto ms-auto">
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-primary rounded-pill" id="save-schedule">
+                    <i class="fas fa-save me-1"></i> Save Schedule
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary rounded-pill" id="disable-schedule">
+                    <i class="fas fa-ban me-1"></i> Disable
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="alert alert-info persistent-alert rounded-3 mt-3">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-calendar-alt text-primary me-2"></i>
+            <div>
+              <span class="fw-medium">Current Schedule:</span> 
+              <span id="schedule-display">
+                <% 
+                  const cronSetting = settings.find(s => s.key === 'synchronization_schedule');
+                  if (cronSetting && cronSetting.value) {
+                    let displayText = 'Loading...';
+                    
+                    if (scheduleInfo.interval === 'hourly') {
+                      displayText = `Every ${scheduleInfo.intervalValue} hour(s)`;
+                    } else {
+                      const time = `${scheduleInfo.timeHour}:${String(scheduleInfo.timeMinute).padStart(2, '0')} ${scheduleInfo.amPm}`;
+                      
+                      if (scheduleInfo.interval === 'daily') {
+                        if (scheduleInfo.intervalValue === 1) {
+                          displayText = `Daily at ${time}`;
+                        } else {
+                          displayText = `Every ${scheduleInfo.intervalValue} days at ${time}`;
+                        }
+                      } else if (scheduleInfo.interval === 'weekly') {
+                        if (scheduleInfo.intervalValue === 1) {
+                          displayText = `Weekly on Sunday at ${time}`;
+                        } else {
+                          displayText = `Every ${scheduleInfo.intervalValue} weeks at ${time}`;
+                        }
+                      } else if (scheduleInfo.interval === 'monthly') {
+                        if (scheduleInfo.intervalValue === 1) {
+                          displayText = `Monthly on the 1st at ${time}`;
+                        } else {
+                          displayText = `Every ${scheduleInfo.intervalValue} months at ${time}`;
+                        }
+                      }
+                    }
+                    
+                    %><%= displayText %><%
+                  } else {
+                    %><span class="text-danger">Not scheduled</span><%
+                  }
+                %>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-clock text-primary me-2"></i>
+            <div>
+              <span class="fw-medium">Next Sync:</span> 
+              <span id="next-sync-time" class="text-primary">
+                <% 
+                  if (cronSetting && cronSetting.value) {
+                    %>Calculating...<%
+                  } else {
+                    %><span class="text-danger">Not scheduled</span><%
+                  }
+                %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-danger py-3">
+    <h2 class="h5 mb-0 text-white">
+      <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center">
+      <form action="/settings/reset_database" method="POST" onsubmit="return confirm('WARNING: This will reset all data. Are you sure you want to continue?')">
+        <button type="submit" class="btn btn-danger rounded-pill">
+          <i class="fas fa-trash-alt me-1"></i> Reset Database
+        </button>
+      </form>
+      <p class="ms-3 mb-0 text-muted">This will delete all rules, settings, and cached data</p>
+    </div>
+  </div>
+</div>
+  
+<!-- Modal for editing settings -->
+<div class="modal fade" id="settingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Edit Setting</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="settingForm">
+          <input type="hidden" id="settingKey" name="key">
+          <div class="mb-3">
+            <label for="settingValue" class="form-label fw-medium" id="valueLabel">Value</label>
+            <input type="text" class="form-control" id="settingValue" name="value">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-primary rounded-pill" id="saveSettingBtn">
+          <i class="fas fa-save me-1"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof bootstrap === 'undefined') {
+      window.bootstrap = {
+        Tooltip: function(el) {
+          this.show = function() {};
+          this.hide = function() {};
+          el.addEventListener('mouseover', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip show';
+            tooltip.innerText = el.getAttribute('title');
+            tooltip.style.position = 'absolute';
+            tooltip.style.backgroundColor = 'black';
+            tooltip.style.color = 'white';
+            tooltip.style.padding = '5px';
+            tooltip.style.borderRadius = '3px';
+            tooltip.style.zIndex = '1000';
+            document.body.appendChild(tooltip);
+            
+            const rect = el.getBoundingClientRect();
+            tooltip.style.top = (rect.bottom + 5) + 'px';
+            tooltip.style.left = rect.left + 'px';
+            
+            el.addEventListener('mouseout', function() {
+              document.body.removeChild(tooltip);
+            }, {once: true});
+          });
+        },
+        Modal: function(el) {
+          this.show = function() {
+            el.style.display = 'block';
+            el.classList.add('show');
+            document.body.classList.add('modal-open');
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+          };
+          this.hide = function() {
+            el.style.display = 'none';
+            el.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+          };
+        },
+        Alert: function(el) {
+          this.close = function() {
+            if (el && el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          };
+        }
+      };
+    }
+
+    document.querySelectorAll('.tooltip-icon').forEach(el => {
+      new bootstrap.Tooltip(el);
+    });
+  
+    // Modal functionality with proper event handling for closing
+    const settingModal = document.getElementById('settingModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const settingKey = document.getElementById('settingKey');
+    const settingValue = document.getElementById('settingValue');
+    const saveBtn = document.getElementById('saveSettingBtn');
+    
+    const modal = new bootstrap.Modal(settingModal);
+    
+    settingModal.addEventListener('hidden.bs.modal', function () {
+      const backdrop = document.querySelector('.modal-backdrop');
+      if (backdrop) {
+        backdrop.remove();
+      }
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    });
+    
+    document.querySelectorAll('.openModalBtn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const key = this.getAttribute('data-key');
+        const value = this.getAttribute('data-value');
+        const displayName = this.getAttribute('data-display-name');
+        
+        modalTitle.textContent = `Edit ${displayName}`;
+        settingKey.value = key;
+        settingValue.value = value;
+        
+        if (key.includes('password') || key.includes('setup_token')) {
+          settingValue.type = 'password';
+        } else {
+          settingValue.type = 'text';
+        }
+        
+        modal.show();
+      });
+    });
+    
+    // Cancel button handler
+    document.querySelector('[data-bs-dismiss="modal"]').addEventListener('click', function() {
+      modal.hide();
+    });
+    
+    saveBtn.addEventListener('click', function() {
+      const key = settingKey.value;
+      const value = settingValue.value;
+      
+      fetch(`/settings/${key}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ value })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('success', 'Setting updated successfully');
+          
+          // Wait a moment before reloading to show the alert
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          showAlert('danger', 'Error updating setting');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred');
+      });
+    });
+    
+    // Add keyboard support for the modal
+    settingModal.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        modal.hide();
+      } else if (e.key === 'Enter' && e.target === settingValue) {
+        saveBtn.click();
+      }
+    });
+    
+    // SimpleFIN and Maybe test functionality
+    setupTestButton('test_simplefin_button', 'simplefin_loading_spinner', 'simplefin_test_result', '/settings/test_simplefin', 'simplefin-count-display');
+    setupTestButton('test_maybe_button', 'maybe_loading_spinner', 'maybe_test_result', '/settings/test_maybe', 'maybe-count-display');
+    
+    // Load account counts from cache
+    function loadCachedCounts() {
+      // SimpleFIN account count
+      fetch('/settings/test_simplefin?countOnly=true')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('simplefin-count-display').textContent = data.account_count;
+        })
+        .catch(error => console.error('Error loading SimpleFIN count:', error));
+      
+      // Maybe account count
+      fetch('/settings/test_maybe?countOnly=true')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('maybe-count-display').textContent = data.account_count;
+        })
+        .catch(error => console.error('Error loading Maybe count:', error));
+    }
+    
+    // Call it when the page loads
+    loadCachedCounts();
+    
+    function setupTestButton(buttonId, spinnerId, resultId, url, countDisplayId) {
+      const button = document.getElementById(buttonId);
+      const spinner = document.getElementById(spinnerId);
+      const resultContainer = document.getElementById(resultId);
+      const countDisplay = document.getElementById(countDisplayId);
+      
+      button.addEventListener('click', function() {
+        spinner.style.display = 'inline-block';
+        
+        resultContainer.innerHTML = '';
+        
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            resultContainer.innerHTML = `<pre class="mt-2 bg-light p-3 rounded shadow-sm">${data.output}</pre>`;
+            countDisplay.textContent = data.account_count;
+            
+            const accountType = url.includes('simplefin') ? 'SimpleFIN' : 'Maybe';
+            showAlert('success', `Successfully retrieved ${data.account_count} ${accountType} accounts`, true);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            resultContainer.innerHTML = `<div class="alert alert-danger mt-2 rounded-3">Error: ${error.message}</div>`;
+            
+            const accountType = url.includes('simplefin') ? 'SimpleFIN' : 'Maybe';
+            showAlert('danger', `Error retrieving ${accountType} accounts: ${error.message}`, true);
+          })
+          .finally(() => {
+            spinner.style.display = 'none';
+          });
+      });
+    }
+    
+    // Handle Lookback Days setting
+    const lookbackInput = document.getElementById('lookback_days');
+    const saveLookbackBtn = document.getElementById('save-lookback');
+    
+    saveLookbackBtn.addEventListener('click', function() {
+      const value = lookbackInput.value;
+      
+      if (value < 1 || value > 365) {
+        showAlert('warning', 'Please enter a number between 1 and 365');
+        return;
+      }
+      
+      updateSetting('lookback_days', value);
+    });
+    
+    // Handle Schedule settings with the improved layout
+    const intervalSelect = document.getElementById('schedule-interval');
+    const valueInput = document.getElementById('schedule-value');
+    const hourSelect = document.getElementById('schedule-hour');
+    const minuteSelect = document.getElementById('schedule-minute');
+    const ampmSelect = document.getElementById('schedule-ampm');
+    const saveScheduleBtn = document.getElementById('save-schedule');
+    const disableScheduleBtn = document.getElementById('disable-schedule');
+    const timeGroups = document.querySelectorAll('.schedule-time-group');
+    
+    // Toggle time fields visibility based on interval
+    intervalSelect.addEventListener('change', function() {
+      const showTimeFields = this.value !== 'hourly';
+      
+      timeGroups.forEach(group => {
+        group.style.display = showTimeFields ? '' : 'none';
+      });
+      
+      // Adjust max value based on interval type
+      if (this.value === 'hourly') {
+        valueInput.max = 24;
+      } else if (this.value === 'daily') {
+        valueInput.max = 31;
+      } else if (this.value === 'weekly') {
+        valueInput.max = 12;
+      } else if (this.value === 'monthly') {
+        valueInput.max = 12;
+      }
+    });
+    
+    intervalSelect.dispatchEvent(new Event('change'));
+    
+    saveScheduleBtn.addEventListener('click', function() {
+      const scheduleData = {
+        interval: intervalSelect.value,
+        value: parseInt(valueInput.value, 10),
+        timeHour: parseInt(hourSelect.value, 10),
+        timeMinute: parseInt(minuteSelect.value, 10),
+        amPm: ampmSelect.value
+      };
+      
+      // Validate
+      if (scheduleData.value < 1) {
+        showAlert('warning', 'Please enter a value of at least 1');
+        return;
+      }
+      
+      // Save as JSON
+      fetch(`/settings/sync_schedule_friendly`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ value: JSON.stringify(scheduleData) })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('success', 'Schedule updated successfully');
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          showAlert('danger', 'Error updating schedule: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while updating the schedule');
+      });
+    });
+    
+    disableScheduleBtn.addEventListener('click', function() {
+      if (confirm('Are you sure you want to disable automatic syncing?')) {
+        updateSetting('synchronization_schedule', '');
+      }
+    });
+    
+    function updateSetting(key, value) {
+      fetch(`/settings/${key}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ value })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          showAlert('success', 'Setting updated successfully');
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          console.error('Error from server:', data.error || 'Unknown error');
+          showAlert('danger', 'Error updating setting: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error in fetch operation:', error);
+        showAlert('danger', 'An error occurred while updating the setting');
+      });
+    }
+    
+    function showAlert(type, message, permanent = false) {
+      const alert = document.createElement('div');
+      
+      if (message.includes("Successfully retrieved") && type === 'success') {
+        alert.className = `alert alert-${type} alert-dismissible fade show rounded-3 mb-3`;
+        alert.style.marginTop = "10px";
+        
+        let resultContainer;
+        if (message.includes("SimpleFIN")) {
+          resultContainer = document.getElementById('simplefin_test_result');
+        } else {
+          resultContainer = document.getElementById('maybe_test_result');
+        }
+        
+        if (resultContainer) {
+          alert.innerHTML = `
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-check-circle me-2"></i>
+              </div>
+              <div class="flex-grow-1">
+                ${message}
+              </div>
+              <button type="button" class="btn-close" aria-label="Close"></button>
+            </div>
+          `;
+          
+          const existingAlert = resultContainer.querySelector('.alert');
+          if (existingAlert) {
+            resultContainer.removeChild(existingAlert);
+          }
+          
+          resultContainer.prepend(alert);
+        } else {
+          console.warn('Result container not found for', message);
+        }
+      } else {
+        alert.className = `alert alert-${type} alert-dismissible fade show rounded-3 m-3 fixed-top mx-auto`;
+        alert.style.maxWidth = '500px';
+        alert.style.left = '0';
+        alert.style.right = '0';
+        alert.style.zIndex = '9999';
+        alert.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        
+        alert.innerHTML = `
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'} me-2"></i>
+            </div>
+            <div class="flex-grow-1">
+              ${message}
+            </div>
+            <button type="button" class="btn-close" aria-label="Close"></button>
+          </div>
+        `;
+        
+        document.body.appendChild(alert);
+        
+        if (type === 'success' && !permanent) {
+          setTimeout(() => {
+            try {
+              if (alert.parentNode) {
+                alert.classList.remove('show');
+                setTimeout(() => {
+                  if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                  }
+                }, 150);
+              }
+            } catch (e) {
+              console.error('Error removing alert:', e);
+            }
+          }, 5000);
+        }
+      }
+      
+      const closeBtn = alert.querySelector('.btn-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          if (alert.parentNode) {
+            alert.classList.remove('show');
+            setTimeout(() => {
+              if (alert.parentNode) {
+                alert.parentNode.removeChild(alert);
+              }
+            }, 150);
+          }
+        });
+      }
+    }
+    
+    function updateNextSyncTime() {
+      const scheduleDisplay = document.getElementById('schedule-display');
+      const nextSyncTime = document.getElementById('next-sync-time');
+      
+      if (scheduleDisplay && scheduleDisplay.textContent && 
+          scheduleDisplay.textContent.trim() !== 'Not scheduled') {
+        
+        try {
+          const scheduleText = scheduleDisplay.textContent.trim();
+          let nextRun = null;
+          const now = new Date();
+          
+          if (scheduleText.includes('Every') && scheduleText.includes('hour')) {
+            const hourMatch = scheduleText.match(/Every (\d+) hour/);
+            if (hourMatch) {
+              const hours = parseInt(hourMatch[1], 10);
+              nextRun = new Date(now);
+              nextRun.setHours(now.getHours() + hours);
+              nextRun.setMinutes(0, 0, 0);
+              if (nextRun <= now) {
+                nextRun.setHours(nextRun.getHours() + hours);
+              }
+            }
+          } else if (scheduleText.includes('at')) {
+            const timeMatch = scheduleText.match(/at (\d+):(\d+) (AM|PM)/);
+            if (timeMatch) {
+              let hours = parseInt(timeMatch[1], 10);
+              const minutes = parseInt(timeMatch[2], 10);
+              const ampm = timeMatch[3];
+              
+              if (ampm === 'PM' && hours < 12) hours += 12;
+              if (ampm === 'AM' && hours === 12) hours = 0;
+              
+              nextRun = new Date(now);
+              nextRun.setHours(hours, minutes, 0, 0);
+              
+              if (nextRun <= now) {
+                if (scheduleText.startsWith('Daily')) {
+                  nextRun.setDate(nextRun.getDate() + 1);
+                } else if (scheduleText.includes('days')) {
+                  const daysMatch = scheduleText.match(/Every (\d+) days/);
+                  if (daysMatch) {
+                    nextRun.setDate(nextRun.getDate() + parseInt(daysMatch[1], 10));
+                  }
+                } else if (scheduleText.startsWith('Weekly')) {
+                  const daysUntilSunday = 7 - now.getDay();
+                  nextRun.setDate(nextRun.getDate() + daysUntilSunday);
+                } else if (scheduleText.includes('weeks')) {
+                  const weeksMatch = scheduleText.match(/Every (\d+) weeks/);
+                  if (weeksMatch) {
+                    const daysUntilSunday = 7 - now.getDay();
+                    nextRun.setDate(nextRun.getDate() + daysUntilSunday + (7 * (parseInt(weeksMatch[1], 10) - 1)));
+                  }
+                } else if (scheduleText.startsWith('Monthly')) {
+                  nextRun.setMonth(nextRun.getMonth() + 1, 1);
+                } else if (scheduleText.includes('months')) {
+                  const monthsMatch = scheduleText.match(/Every (\d+) months/);
+                  if (monthsMatch) {
+                    nextRun.setMonth(nextRun.getMonth() + parseInt(monthsMatch[1], 10), 1);
+                  }
+                }
+              }
+            }
+          }
+          
+          if (nextRun) {
+            const options = { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit'
+            };
+            nextSyncTime.textContent = nextRun.toLocaleDateString(undefined, options);
+            return;
+          }
+        } catch (error) {
+          console.error('Error calculating next sync time locally:', error);
+        }
+        
+        // If local calculation failed, try fetching from server
+        fetch('/settings/schedule_display')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              if (data.display) {
+                scheduleDisplay.textContent = data.display;
+              }
+              
+              if (data.schedule) {
+                try {
+                  const { interval, intervalValue, timeHour, timeMinute, amPm } = data.schedule;
+                  
+                  const now = new Date();
+                  let nextRun = new Date();
+                  
+                  let hour = parseInt(timeHour);
+                  if (amPm === 'PM' && hour < 12) {
+                    hour += 12;
+                  } else if (amPm === 'AM' && hour === 12) {
+                    hour = 0;
+                  }
+                  
+                  nextRun.setHours(hour, timeMinute, 0, 0);
+                  
+                  if (nextRun < now) {
+                    if (interval === 'hourly') {
+                      const currentHour = now.getHours();
+                      const nextHour = Math.ceil(currentHour / intervalValue) * intervalValue;
+                      nextRun.setHours(nextHour, timeMinute, 0, 0);
+                      
+                      if (nextRun < now) {
+                        nextRun.setDate(nextRun.getDate() + 1);
+                        nextRun.setHours(intervalValue, timeMinute, 0, 0);
+                      }
+                    } else if (interval === 'daily') {
+                      nextRun.setDate(nextRun.getDate() + intervalValue);
+                    } else if (interval === 'weekly') {
+                      const daysUntilSunday = 7 - now.getDay();
+                      nextRun.setDate(nextRun.getDate() + daysUntilSunday + (7 * (intervalValue - 1)));
+                    } else if (interval === 'monthly') {
+                      nextRun.setMonth(nextRun.getMonth() + intervalValue, 1);
+                    }
+                  }
+                  
+                  const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  };
+                  nextSyncTime.textContent = nextRun.toLocaleDateString(undefined, options);
+                } catch (error) {
+                  console.error('Error calculating next sync time:', error);
+                  nextSyncTime.textContent = 'Next scheduled run based on cron expression';
+                }
+              }
+            } else {
+              console.error('Error in schedule data:', data.error || 'Unknown error');
+              nextSyncTime.textContent = 'Based on configured schedule';
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching schedule display:', error);
+            nextSyncTime.textContent = 'Based on configured schedule';
+          });
+      } else {
+        nextSyncTime.textContent = 'Not scheduled';
+      }
+    }
+    
+    document.querySelectorAll('.alert.alert-info').forEach(alert => {
+      if (alert.classList.contains('alert-dismissible') || alert.classList.contains('persistent-alert')) return;
+      
+      alert.classList.add('alert-dismissible');
+      
+      const container = alert.querySelector('.d-flex') || alert.querySelector('div');
+      
+      if (container) {
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'btn-close';
+        closeButton.setAttribute('aria-label', 'Close');
+        closeButton.style.position = 'absolute';
+        closeButton.style.right = '1rem';
+        closeButton.style.top = '1rem';
+        
+        closeButton.addEventListener('click', function() {
+          alert.classList.remove('show');
+          setTimeout(() => {
+            alert.style.display = 'none';
+          }, 150);
+        });
+        
+        container.appendChild(closeButton);
+      }
+    });
+
+    updateNextSyncTime();
+  });
+</script>
+
+<%- include('../partials/footer') %>
