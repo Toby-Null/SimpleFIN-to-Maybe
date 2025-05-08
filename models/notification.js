@@ -84,7 +84,6 @@ const updateNotificationMethod = async (method, enabled) => {
         [uuidv4(), method, enabled, JSON.stringify(getDefaultSettings(method))]
       );
     } else {
-      // Update existing settings
       await pool.query(
         `UPDATE notification_settings
          SET enabled = $1, updated_at = NOW()
@@ -103,13 +102,11 @@ const updateNotificationMethod = async (method, enabled) => {
 // Update notification settings
 const updateNotificationSettings = async (method, settings) => {
   try {
-    // Check if settings exist
     const existingResult = await pool.query(
       `SELECT id FROM notification_settings WHERE method = $1`,
       [method]
     );
     
-    // Clean up settings to only include relevant fields
     const cleanSettings = {};
     
     switch (method) {
@@ -173,7 +170,6 @@ const getEventSettings = async () => {
       http: []
     };
     
-    // Add enabled events to respective arrays
     result.rows.forEach(row => {
       if (row.enabled) {
         eventSettings[row.method].push(row.event_type);
@@ -190,7 +186,6 @@ const getEventSettings = async () => {
 // Update event settings
 const updateEventSettings = async (method, event, enabled) => {
   try {
-    // Check if event settings exist
     const existingResult = await pool.query(
       `SELECT id FROM notification_events 
        WHERE method = $1 AND event_type = $2`,
@@ -198,7 +193,6 @@ const updateEventSettings = async (method, event, enabled) => {
     );
     
     if (existingResult.rows.length === 0) {
-      // Create new event settings
       await pool.query(
         `INSERT INTO notification_events (id, method, event_type, enabled, created_at, updated_at)
          VALUES ($1, $2, $3, $4, NOW(), NOW())`,
@@ -224,7 +218,6 @@ const updateEventSettings = async (method, event, enabled) => {
 // Send notification
 const sendNotification = async (event, data) => {
   try {
-    // Get all enabled notification methods for this event
     const result = await pool.query(
       `SELECT ne.method, ns.enabled as method_enabled, ns.settings
        FROM notification_events ne
@@ -262,14 +255,12 @@ const sendNotification = async (event, data) => {
         }
       } catch (methodError) {
         console.error(`Error sending ${row.method} notification for event ${event}:`, methodError);
-        // Continue with other methods even if one fails
       }
     }
     
     return true;
   } catch (error) {
     console.error(`Error sending notification for event ${event}:`, error);
-    // Don't throw error to prevent critical processes from failing
     return false;
   }
 };
@@ -277,7 +268,6 @@ const sendNotification = async (event, data) => {
 // Helper function to send email notification
 const sendEmailNotification = async (settings, event, data) => {
   try {
-    // Create transporter
     const transporter = nodemailer.createTransport({
       host: settings.host,
       port: settings.port,
@@ -332,7 +322,6 @@ const sendWebhookNotification = async (settings, event, data) => {
       // Format message for Google Chat
       let message = `*SimpleFIN to Maybe - ${formatEventName(event)}*\n\n${data.message}\n\n`;
       
-      // Add event-specific details for Google Chat
       switch (event) {
         case 'sync_success':
           if (data.details) {
@@ -426,7 +415,7 @@ const sendWebhookNotification = async (settings, event, data) => {
           if (data.error) {
             embed.fields.push({
               name: 'Error',
-              value: `\`\`\`\n${data.error.substring(0, 1000)}\n\`\`\``, // Discord has a 1024 char limit per field
+              value: `\`\`\`\n${data.error.substring(0, 1000)}\n\`\`\``,
             });
           }
           break;
@@ -443,26 +432,23 @@ const sendWebhookNotification = async (settings, event, data) => {
       
       // Discord webhook format
       payload = {
-        content: null, // No plain text content
+        content: null,
         embeds: [embed],
-        username: 'SimpleFIN to Maybe', // Optional custom username
-        avatar_url: null // Optional custom avatar
+        username: 'SimpleFIN to Maybe',
+        avatar_url: null
       };
     }
     else {
-      // Standard webhook format - include all data
       payload = {
         event,
         ...data
       };
     }
     
-    // Add custom headers
     if (settings.headers) {
       Object.assign(headers, settings.headers);
     }
     
-    // Add signature header if secret is provided and not Google Chat/Discord
     if (settings.secret && !isGoogleChat && !isDiscord) {
       const signature = crypto
         .createHmac('sha256', settings.secret)
@@ -472,7 +458,6 @@ const sendWebhookNotification = async (settings, event, data) => {
       headers['X-Signature'] = signature;
     }
     
-    // Send webhook with better error handling
     try {
       const response = await axios.post(settings.url, payload, { headers });
       return true;
@@ -483,7 +468,6 @@ const sendWebhookNotification = async (settings, event, data) => {
         error.response?.statusText,
         error.response?.data
       );
-      // Re-throw to be handled by the caller
       throw error;
     }
   } catch (error) {
@@ -495,16 +479,13 @@ const sendWebhookNotification = async (settings, event, data) => {
 // Helper function to send HTTP notification
 const sendHttpNotification = async (settings, event, data) => {
   try {
-    // Replace placeholders in body template
     let body = settings.bodyTemplate || '';
     
-    // Add event to data
     const placeholders = {
       event,
       ...data
     };
     
-    // Replace all placeholders
     Object.keys(placeholders).forEach(key => {
       body = body.replace(new RegExp(`{{${key}}}`, 'g'), placeholders[key]);
     });
@@ -513,12 +494,10 @@ const sendHttpNotification = async (settings, event, data) => {
       'Content-Type': 'application/json'
     };
     
-    // Add custom headers
     if (settings.headers) {
       Object.assign(headers, settings.headers);
     }
     
-    // Make HTTP request
     const options = {
       method: settings.method || 'POST',
       headers: headers
@@ -540,7 +519,6 @@ const sendHttpNotification = async (settings, event, data) => {
   }
 };
 
-// Helper function to format event name
 const formatEventName = (event) => {
   return event
     .split('_')
@@ -548,11 +526,9 @@ const formatEventName = (event) => {
     .join(' ');
 };
 
-// Helper function to generate HTML email content
 const getEmailHtml = (event, data) => {
   let details = '';
   
-  // Add event-specific details
   switch (event) {
     case 'sync_success':
       if (data.details) {
@@ -581,7 +557,6 @@ const getEmailHtml = (event, data) => {
       break;
   }
   
-  // Generate full HTML email
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
       <h2 style="color: #0066cc;">SimpleFIN to Maybe - ${formatEventName(event)}</h2>

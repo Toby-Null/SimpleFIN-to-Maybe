@@ -1,9 +1,6 @@
 const { pool } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
-/**
- * Initialize default notification events in the database
- */
 const initializeNotificationEvents = async () => {
   try {
     console.log('Initializing notification events...');
