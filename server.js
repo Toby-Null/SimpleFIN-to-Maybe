@@ -11,6 +11,7 @@ const { pool } = require('./config/database');
 const cron = require('node-cron');
 const syncService = require('./services/syncService');
 const { notifyServerStart, notifyServerError } = require('./services/notificationService');
+require('./services/notificationsModuleInit');
 
 // Import routes
 const accountsRoutes = require('./routes/accounts');
