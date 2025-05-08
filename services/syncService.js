@@ -5,6 +5,7 @@ const { getAccountById } = require('../models/account');
 const { getSetting } = require('../models/setting');
 const { applyRulesToTransaction } = require('../models/rule');
 const { syncCategoriesFromMaybe } = require('../models/category');
+const { notifySyncStarted, notifySyncSuccess, notifySyncError } = require('./notificationService');
 
 // Sync a single linkage
 const syncLinkage = async (linkageId) => {
@@ -25,6 +26,9 @@ const syncLinkage = async (linkageId) => {
     }
     
     await updateSyncStatus(linkageId, 'running');
+    
+    // Send notification that sync is starting
+    await notifySyncStarted(linkageId);
     
     // Get accounts
     const maybeAccount = await getAccountById(linkage.maybe_account_id);
@@ -79,6 +83,9 @@ const syncLinkage = async (linkageId) => {
     
     console.log(`Retrieved ${simplefinTransactions.length} SimpleFIN transactions`);
     
+    // Track processed transactions for notification details
+    let processedTransactions = 0;
+    
     // Process transactions
     for (const simplefinTransaction of simplefinTransactions) {
       if (!simplefinTransaction) continue;
@@ -110,6 +117,7 @@ const syncLinkage = async (linkageId) => {
         if (categoryId && categoryId !== existingTransaction.category_id) {
           console.log(`Updating category for transaction with plaid_id='${transactionId}' to ${categoryId}`);
           await maybeClient.updateTransactionCategory(existingTransaction.entryable_id, categoryId);
+          processedTransactions++;
         }
       } else {
         // If this transaction hasn't been synced yet, create a new transaction in Maybe
@@ -122,6 +130,7 @@ const syncLinkage = async (linkageId) => {
           
           const currency = simplefinAccount.currency || maybeAccount.currency || 'USD';
           await maybeClient.newTransaction(maybeAccount.identifier, simplefinTransaction, currency, categoryId);
+          processedTransactions++;
         }
       }
     }
@@ -137,16 +146,53 @@ const syncLinkage = async (linkageId) => {
     
     console.log(`Sync completed successfully for linkage ${linkageId}`);
     
-    return { success: true };
+    // Send success notification with details
+    await notifySyncSuccess(linkageId, {
+      simplefin_account: simplefinAccount.display_name,
+      maybe_account: maybeAccount.display_name,
+      transactions_processed: processedTransactions
+    });
+    
+    return { 
+      success: true,
+      details: {
+        simplefin_account: simplefinAccount.display_name,
+        maybe_account: maybeAccount.display_name,
+        transactions_processed: processedTransactions
+      }
+    };
   } catch (error) {
     console.error(`Error syncing linkage ${linkageId}:`, error);
     await setLinkageError(linkageId, error.message);
+    
+    // Send error notification
+    await notifySyncError(linkageId, error);
+    
     return { success: false, error: error.message };
   } finally {
     // Close connections
     if (maybeClient) {
       await maybeClient.close();
     }
+  }
+};
+
+// Run all enabled syncs
+const runAllSyncs = async () => {
+  try {
+    const enabledLinkages = await getEnabledLinkages();
+    
+    console.log(`Found ${enabledLinkages.length} enabled linkages to sync`);
+    
+    for (const linkage of enabledLinkages) {
+      console.log(`Starting sync for linkage ${linkage.id}`);
+      await syncLinkage(linkage.id);
+    }
+    
+    return { success: true, message: `Synced ${enabledLinkages.length} linkages` };
+  } catch (error) {
+    console.error('Error running all syncs:', error);
+    return { success: false, error: error.message };
   }
 };
 
@@ -169,25 +215,6 @@ const shouldSyncTransaction = (accountType, transaction) => {
   
   // Sync all other transactions
   return true;
-};
-
-// Run all enabled syncs
-const runAllSyncs = async () => {
-  try {
-    const enabledLinkages = await getEnabledLinkages();
-    
-    console.log(`Found ${enabledLinkages.length} enabled linkages to sync`);
-    
-    for (const linkage of enabledLinkages) {
-      console.log(`Starting sync for linkage ${linkage.id}`);
-      await syncLinkage(linkage.id);
-    }
-    
-    return { success: true, message: `Synced ${enabledLinkages.length} linkages` };
-  } catch (error) {
-    console.error('Error running all syncs:', error);
-    return { success: false, error: error.message };
-  }
 };
 
 module.exports = {

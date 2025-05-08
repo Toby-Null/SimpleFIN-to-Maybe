@@ -10,12 +10,15 @@ const bodyParser = require('body-parser');
 const { pool } = require('./config/database');
 const cron = require('node-cron');
 const syncService = require('./services/syncService');
+const { notifyServerStart, notifyServerError } = require('./services/notificationService');
+require('./services/notificationsModuleInit');
 
 // Import routes
 const accountsRoutes = require('./routes/accounts');
 const linkagesRoutes = require('./routes/linkages');
 const settingsRoutes = require('./routes/settings');
 const rulesRoutes = require('./routes/rules');
+const notificationsRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -57,6 +60,7 @@ app.use('/accounts', accountsRoutes);
 app.use('/linkages', linkagesRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/rules', rulesRoutes);
+app.use('/notifications', notificationsRoutes);
 
 // Home route (redirects to linkages)
 app.get('/', (req, res) => {
@@ -111,5 +115,30 @@ const setupCronJob = async () => {
 const PORT = process.env.PORT || 9501;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  await setupCronJob();
+  
+  try {
+    // Run existing setup operations
+    await setupCronJob();
+    
+    // Send server start notification
+    await notifyServerStart();
+  } catch (error) {
+    console.error('Error during server startup:', error);
+  }
+});
+
+process.on('uncaughtException', async (error) => {
+  console.error('Uncaught exception:', error);
+  
+  try {
+    // Send server error notification
+    await notifyServerError(error);
+  } catch (notifyError) {
+    console.error('Error sending error notification:', notifyError);
+  }
+  
+  // Exit with error code after a delay to allow notification to be sent
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
 });

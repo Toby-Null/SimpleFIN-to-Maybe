@@ -1,0 +1,725 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+  <div class="col">
+    <h1 class="display-6 mb-3">Notifications</h1>
+    <p class="text-muted">Configure how you want to be notified about sync events</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">
+      <i class="fas fa-bell text-primary me-2"></i>Notification Methods
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-tab-pane" type="button" role="tab">
+          <i class="fas fa-envelope me-2"></i>Email
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="webhook-tab" data-bs-toggle="tab" data-bs-target="#webhook-tab-pane" type="button" role="tab">
+          <i class="fas fa-link me-2"></i>Webhook
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="http-tab" data-bs-toggle="tab" data-bs-target="#http-tab-pane" type="button" role="tab">
+          <i class="fas fa-globe me-2"></i>HTTP Request
+        </button>
+      </li>
+    </ul>
+    
+    <div class="tab-content p-3 mt-3" id="notificationTabsContent">
+      <!-- Email Tab -->
+      <div class="tab-pane fade show active" id="email-tab-pane" role="tabpanel" aria-labelledby="email-tab" tabindex="0">
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input method-toggle" type="checkbox" id="email-enabled" 
+                data-method="email" <%= emailSettings && emailSettings.enabled ? 'checked' : '' %>>
+              <label class="form-check-label fw-medium" for="email-enabled">Enable Email Notifications</label>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="btn-group float-end">
+              <button type="button" class="btn btn-outline-primary test-notification-btn" data-method="email">
+                <i class="fas fa-paper-plane me-1"></i> Test
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <form id="email-form" class="mt-4 <%= emailSettings && emailSettings.enabled ? '' : 'opacity-50' %>"
+          <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="smtp-host" class="form-label">SMTP Host</label>
+              <input type="text" class="form-control" id="smtp-host" name="host" 
+                value="<%= emailSettings ? emailSettings.host : '' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+            <div class="col-md-6">
+              <label for="smtp-port" class="form-label">SMTP Port</label>
+              <input type="number" class="form-control" id="smtp-port" name="port" 
+                value="<%= emailSettings ? emailSettings.port : '587' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="smtp-user" class="form-label">SMTP Username</label>
+              <input type="text" class="form-control" id="smtp-user" name="username" 
+                value="<%= emailSettings ? emailSettings.username : '' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+            <div class="col-md-6">
+              <label for="smtp-password" class="form-label">SMTP Password</label>
+              <input type="password" class="form-control" id="smtp-password" name="password" 
+                value="<%= emailSettings ? emailSettings.password : '' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="smtp-from" class="form-label">From Email</label>
+              <input type="email" class="form-control" id="smtp-from" name="from" 
+                value="<%= emailSettings ? emailSettings.from : '' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+            <div class="col-md-6">
+              <label for="smtp-to" class="form-label">To Email</label>
+              <input type="email" class="form-control" id="smtp-to" name="to" 
+                value="<%= emailSettings ? emailSettings.to : '' %>" 
+                <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            </div>
+          </div>
+          
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="smtp-secure" name="secure" 
+              <%= emailSettings && emailSettings.secure ? 'checked' : '' %> 
+              <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+            <label class="form-check-label" for="smtp-secure">
+              Use SSL/TLS
+            </label>
+          </div>
+          
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-primary save-settings-btn" data-method="email" 
+              <%= emailSettings && emailSettings.enabled ? '' : 'disabled' %>>
+              <i class="fas fa-save me-1"></i> Save Email Settings
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Webhook Tab -->
+      <div class="tab-pane fade" id="webhook-tab-pane" role="tabpanel" aria-labelledby="webhook-tab" tabindex="0">
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input method-toggle" type="checkbox" id="webhook-enabled" 
+                data-method="webhook" <%= webhookSettings && webhookSettings.enabled ? 'checked' : '' %>>
+              <label class="form-check-label fw-medium" for="webhook-enabled">Enable Webhook Notifications (Tested Google Chat & Discord)</label>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="btn-group float-end">
+              <button type="button" class="btn btn-outline-primary test-notification-btn" data-method="webhook">
+                <i class="fas fa-paper-plane me-1"></i> Test
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <form id="webhook-form" class="mt-4 <%= webhookSettings && webhookSettings.enabled ? '' : 'opacity-50' %>"
+          <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+          <div class="mb-3">
+            <label for="webhook-url" class="form-label">Webhook URL</label>
+            <input type="url" class="form-control" id="webhook-url" name="url" 
+              value="<%= webhookSettings ? webhookSettings.url : '' %>" 
+              <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+            <div class="form-text">
+              We'll send a POST request with JSON data about the event to this URL.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="webhook-secret" class="form-label">Secret Token (Optional)</label>
+            <input type="text" class="form-control" id="webhook-secret" name="secret" 
+              value="<%= webhookSettings ? webhookSettings.secret : '' %>" 
+              <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+            <div class="form-text">
+              If provided, we'll add a X-Signature header with a HMAC SHA-256 signature of the payload.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Headers (Optional)</label>
+            <div id="webhook-headers-container">
+              <% if (webhookSettings && webhookSettings.headers) { %>
+                <% Object.entries(webhookSettings.headers).forEach(([key, value], index) => { %>
+                  <div class="row mb-2 webhook-header-row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="header-key-<%= index %>" placeholder="Header Name" value="<%= key %>" 
+                        <%= webhookSettings.enabled ? '' : 'disabled' %>>
+                    </div>
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="header-value-<%= index %>" placeholder="Header Value" value="<%= value %>" 
+                        <%= webhookSettings.enabled ? '' : 'disabled' %>>
+                    </div>
+                    <div class="col-md-2">
+                      <button type="button" class="btn btn-outline-danger webhook-remove-header" 
+                        <%= webhookSettings.enabled ? '' : 'disabled' %>>
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <div class="row mb-2 webhook-header-row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" name="header-key-0" placeholder="Header Name" 
+                      <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" name="header-value-0" placeholder="Header Value" 
+                      <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger webhook-remove-header" 
+                      <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+            
+            <div class="mt-2">
+              <button type="button" class="btn btn-outline-secondary" id="webhook-add-header" 
+                <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+                <i class="fas fa-plus me-1"></i> Add Header
+              </button>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-primary save-settings-btn" data-method="webhook" 
+              <%= webhookSettings && webhookSettings.enabled ? '' : 'disabled' %>>
+              <i class="fas fa-save me-1"></i> Save Webhook Settings
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- HTTP Request Tab -->
+      <div class="tab-pane fade" id="http-tab-pane" role="tabpanel" aria-labelledby="http-tab" tabindex="0">
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input method-toggle" type="checkbox" id="http-enabled" 
+                data-method="http" <%= httpSettings && httpSettings.enabled ? 'checked' : '' %>>
+              <label class="form-check-label fw-medium" for="http-enabled">Enable HTTP Notifications</label>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="btn-group float-end">
+              <button type="button" class="btn btn-outline-primary test-notification-btn" data-method="http">
+                <i class="fas fa-paper-plane me-1"></i> Test
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <form id="http-form" class="mt-4 <%= httpSettings && httpSettings.enabled ? '' : 'opacity-50' %>"
+          <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+          <div class="row mb-3">
+            <div class="col-md-8">
+              <label for="http-url" class="form-label">URL</label>
+              <input type="url" class="form-control" id="http-url" name="url" 
+                value="<%= httpSettings ? httpSettings.url : '' %>" 
+                <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+            </div>
+            <div class="col-md-4">
+              <label for="http-method" class="form-label">Method</label>
+              <select class="form-select" id="http-method" name="method" 
+                <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+                <option value="GET" <%= httpSettings && httpSettings.method === 'GET' ? 'selected' : '' %>>GET</option>
+                <option value="POST" <%= !httpSettings || httpSettings.method === 'POST' ? 'selected' : '' %>>POST</option>
+                <option value="PUT" <%= httpSettings && httpSettings.method === 'PUT' ? 'selected' : '' %>>PUT</option>
+                <option value="PATCH" <%= httpSettings && httpSettings.method === 'PATCH' ? 'selected' : '' %>>PATCH</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Headers (Optional)</label>
+            <div id="http-headers-container">
+              <% if (httpSettings && httpSettings.headers) { %>
+                <% Object.entries(httpSettings.headers).forEach(([key, value], index) => { %>
+                  <div class="row mb-2 http-header-row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="header-key-<%= index %>" placeholder="Header Name" value="<%= key %>" 
+                        <%= httpSettings.enabled ? '' : 'disabled' %>>
+                    </div>
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="header-value-<%= index %>" placeholder="Header Value" value="<%= value %>" 
+                        <%= httpSettings.enabled ? '' : 'disabled' %>>
+                    </div>
+                    <div class="col-md-2">
+                      <button type="button" class="btn btn-outline-danger http-remove-header" 
+                        <%= httpSettings.enabled ? '' : 'disabled' %>>
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <div class="row mb-2 http-header-row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" name="header-key-0" placeholder="Header Name" 
+                      <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" name="header-value-0" placeholder="Header Value" 
+                      <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger http-remove-header" 
+                      <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+            
+            <div class="mt-2">
+              <button type="button" class="btn btn-outline-secondary" id="http-add-header" 
+                <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+                <i class="fas fa-plus me-1"></i> Add Header
+              </button>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="http-body-template" class="form-label">Body Template (for POST/PUT/PATCH)</label>
+            <textarea class="form-control" id="http-body-template" name="bodyTemplate" rows="5" 
+              <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>><%= httpSettings ? httpSettings.bodyTemplate : '{\n  "event": "{{event}}",\n  "status": "{{status}}",\n  "message": "{{message}}",\n  "timestamp": "{{timestamp}}"\n}' %></textarea>
+            <div class="form-text">
+              You can use placeholders like {{event}}, {{status}}, {{message}}, {{timestamp}}, {{linkage_id}}, etc.
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-primary save-settings-btn" data-method="http" 
+              <%= httpSettings && httpSettings.enabled ? '' : 'disabled' %>>
+              <i class="fas fa-save me-1"></i> Save HTTP Settings
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">
+      <i class="fas fa-cog text-primary me-2"></i>Notification Events
+    </h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="table-responsive">
+      <table class="table">
+        <thead class="table-light">
+          <tr>
+            <th>Event</th>
+            <th>Description</th>
+            <th class="text-center">Email</th>
+            <th class="text-center">Webhook</th>
+            <th class="text-center">HTTP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% const events = [
+            { id: 'sync_success', name: 'Sync Success', description: 'Successful synchronization of accounts' },
+            { id: 'sync_error', name: 'Sync Error', description: 'Error during synchronization' },
+            { id: 'sync_started', name: 'Sync Started', description: 'Synchronization process started' },
+            { id: 'server_start', name: 'Server Start', description: 'Application server started' },
+            { id: 'server_error', name: 'Server Error', description: 'Critical server error occurred' }
+          ]; %>
+          
+          <% events.forEach(event => { %>
+            <tr>
+              <td class="fw-medium"><%= event.name %></td>
+              <td><%= event.description %></td>
+              <td class="text-center">
+                <div class="form-check form-switch d-flex justify-content-center">
+                  <input class="form-check-input event-toggle" type="checkbox" 
+                    id="email-<%= event.id %>" 
+                    data-method="email" 
+                    data-event="<%= event.id %>"
+                    <%= eventSettings && eventSettings.email && eventSettings.email.includes(event.id) ? 'checked' : '' %>>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="form-check form-switch d-flex justify-content-center">
+                  <input class="form-check-input event-toggle" type="checkbox" 
+                    id="webhook-<%= event.id %>" 
+                    data-method="webhook" 
+                    data-event="<%= event.id %>"
+                    <%= eventSettings && eventSettings.webhook && eventSettings.webhook.includes(event.id) ? 'checked' : '' %>>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="form-check form-switch d-flex justify-content-center">
+                  <input class="form-check-input event-toggle" type="checkbox" 
+                    id="http-<%= event.id %>" 
+                    data-method="http" 
+                    data-event="<%= event.id %>"
+                    <%= eventSettings && eventSettings.http && eventSettings.http.includes(event.id) ? 'checked' : '' %>>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal fade" id="testResultModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="testResultTitle">Test Result</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="testResultContent">
+          
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Method Toggle Switches
+    document.querySelectorAll('.method-toggle').forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const method = this.getAttribute('data-method');
+        const form = document.getElementById(`${method}-form`);
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        
+        if (this.checked) {
+          form.classList.remove('opacity-50');
+          form.removeAttribute('disabled');
+          inputs.forEach(input => {
+            input.removeAttribute('disabled');
+          });
+        } else {
+          form.classList.add('opacity-50');
+          form.setAttribute('disabled', '');
+          inputs.forEach(input => {
+            input.setAttribute('disabled', '');
+          });
+        }
+        
+        // Update event toggles based on method toggle
+        document.querySelectorAll(`.event-toggle[data-method="${method}"]`).forEach(eventToggle => {
+          eventToggle.disabled = !this.checked;
+        });
+        
+        // Save method enabled status
+        fetch(`/notifications/${method}/toggle`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ enabled: this.checked })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('success', `${method.charAt(0).toUpperCase() + method.slice(1)} notifications ${this.checked ? 'enabled' : 'disabled'}`);
+          } else {
+            showAlert('danger', data.error || 'An error occurred');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('danger', 'An error occurred while updating settings');
+        });
+      });
+    });
+    
+    // Event Toggle Switches
+    document.querySelectorAll('.event-toggle').forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const method = this.getAttribute('data-method');
+        const event = this.getAttribute('data-event');
+        const enabled = this.checked;
+        
+        fetch(`/notifications/events/${method}/${event}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ enabled })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('success', `${event.replace('_', ' ')} ${enabled ? 'enabled' : 'disabled'} for ${method}`);
+          } else {
+            showAlert('danger', data.error || 'An error occurred');
+            // Reset toggle if fail
+            this.checked = !enabled;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('danger', 'An error occurred while updating event settings');
+          // Reset toggle if fail
+          this.checked = !enabled;
+        });
+      });
+    });
+    
+    // Disable event toggles for disabled methods
+    document.querySelectorAll('.method-toggle').forEach(toggle => {
+      const method = toggle.getAttribute('data-method');
+      const enabled = toggle.checked;
+      
+      document.querySelectorAll(`.event-toggle[data-method="${method}"]`).forEach(eventToggle => {
+        eventToggle.disabled = !enabled;
+      });
+    });
+    
+    // Save Settings Buttons
+    document.querySelectorAll('.save-settings-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const method = this.getAttribute('data-method');
+        const form = document.getElementById(`${method}-form`);
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (const [key, value] of formData.entries()) {
+          data[key] = value;
+        }
+        
+        // Handle special case for webhook/http headers
+        if (method === 'webhook' || method === 'http') {
+          data.headers = {};
+          
+          // Get all header inputs
+          const headerContainer = document.getElementById(`${method}-headers-container`);
+          const headerRows = headerContainer.querySelectorAll(`.${method}-header-row`);
+          
+          headerRows.forEach((row, index) => {
+            const keyInput = row.querySelector(`input[name="header-key-${index}"]`);
+            const valueInput = row.querySelector(`input[name="header-value-${index}"]`);
+            
+            if (keyInput && valueInput && keyInput.value.trim() !== '') {
+              data.headers[keyInput.value.trim()] = valueInput.value;
+            }
+          });
+        }
+        
+        fetch(`/notifications/${method}/settings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('success', `${method.charAt(0).toUpperCase() + method.slice(1)} settings saved successfully`);
+          } else {
+            showAlert('danger', data.error || 'An error occurred');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('danger', 'An error occurred while saving settings');
+        });
+      });
+    });
+    
+    // Test Notification Buttons
+    document.querySelectorAll('.test-notification-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const method = this.getAttribute('data-method');
+        const testResultModal = new bootstrap.Modal(document.getElementById('testResultModal'));
+        const testResultTitle = document.getElementById('testResultTitle');
+        const testResultContent = document.getElementById('testResultContent');
+        
+        testResultTitle.textContent = `Test ${method.charAt(0).toUpperCase() + method.slice(1)} Notification`;
+        testResultContent.innerHTML = `
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3">Sending test notification...</p>
+          </div>
+        `;
+        
+        testResultModal.show();
+        
+        fetch(`/notifications/${method}/test`, {
+          method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            testResultContent.innerHTML = `
+              <div class="alert alert-success mb-0">
+                <i class="fas fa-check-circle me-2"></i>
+                Test notification sent successfully!
+              </div>
+              <div class="mt-3">
+                <strong>Details:</strong>
+                <pre class="mt-2 bg-light p-3 rounded">${JSON.stringify(data.details || {}, null, 2)}</pre>
+              </div>
+            `;
+          } else {
+            testResultContent.innerHTML = `
+              <div class="alert alert-danger mb-0">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Failed to send test notification
+              </div>
+              <div class="mt-3">
+                <strong>Error:</strong>
+                <pre class="mt-2 bg-light p-3 rounded">${data.error || 'Unknown error'}</pre>
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          testResultContent.innerHTML = `
+            <div class="alert alert-danger mb-0">
+              <i class="fas fa-exclamation-circle me-2"></i>
+              An error occurred
+            </div>
+            <div class="mt-3">
+              <strong>Error:</strong>
+              <pre class="mt-2 bg-light p-3 rounded">${error.message || 'Unknown error'}</pre>
+            </div>
+          `;
+        });
+      });
+    });
+    
+    // Add webhook header button
+    document.getElementById('webhook-add-header').addEventListener('click', function() {
+      const container = document.getElementById('webhook-headers-container');
+      const rows = container.querySelectorAll('.webhook-header-row');
+      const newIndex = rows.length;
+      
+      const newRow = document.createElement('div');
+      newRow.className = 'row mb-2 webhook-header-row';
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" class="form-control" name="header-key-${newIndex}" placeholder="Header Name">
+        </div>
+        <div class="col-md-5">
+          <input type="text" class="form-control" name="header-value-${newIndex}" placeholder="Header Value">
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-outline-danger webhook-remove-header">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(newRow);
+      
+      // Add event listener to new remove button
+      newRow.querySelector('.webhook-remove-header').addEventListener('click', function() {
+        newRow.remove();
+      });
+    });
+    
+    // Add HTTP header button
+    document.getElementById('http-add-header').addEventListener('click', function() {
+      const container = document.getElementById('http-headers-container');
+      const rows = container.querySelectorAll('.http-header-row');
+      const newIndex = rows.length;
+      
+      const newRow = document.createElement('div');
+      newRow.className = 'row mb-2 http-header-row';
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" class="form-control" name="header-key-${newIndex}" placeholder="Header Name">
+        </div>
+        <div class="col-md-5">
+          <input type="text" class="form-control" name="header-value-${newIndex}" placeholder="Header Value">
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-outline-danger http-remove-header">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(newRow);
+      
+      // Add event listener to new remove button
+      newRow.querySelector('.http-remove-header').addEventListener('click', function() {
+        newRow.remove();
+      });
+    });
+    
+    // Initial setup for webhook header remove buttons
+    document.querySelectorAll('.webhook-remove-header').forEach(button => {
+      button.addEventListener('click', function() {
+        this.closest('.webhook-header-row').remove();
+      });
+    });
+    
+    // Initial setup for HTTP header remove buttons
+    document.querySelectorAll('.http-remove-header').forEach(button => {
+      button.addEventListener('click', function() {
+        this.closest('.http-header-row').remove();
+      });
+    });
+    
+    // Helper function to show alerts
+    function showAlert(type, message) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-4`;
+      alert.style.zIndex = 9999;
+      alert.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+          ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(alert);
+        }, 150);
+      }, 3000);
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>
