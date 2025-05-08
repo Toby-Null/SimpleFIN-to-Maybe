@@ -10,6 +10,7 @@ A synchronization tool to connect SimpleFIN accounts with Maybe Finance.
 - Transaction Rule: Transform your transaction data with custom rules for categorization
 - Transaction History: Customize how far back to retrieve transactions
 - Web Interface: Easy-to-use dashboard for configuration and monitoring
+- Event Notification
 
 # Demo
 
