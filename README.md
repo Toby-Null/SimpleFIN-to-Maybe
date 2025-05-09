@@ -16,6 +16,7 @@ A synchronization tool to connect SimpleFIN accounts with Maybe Finance.
 ![Maybe Settings](https://raw.githubusercontent.com/Toby-Null/SimpleFIN-to-Maybe/main/demo/Maybe%20Settings.png)
 ![Simplefin Settings](https://raw.githubusercontent.com/Toby-Null/SimpleFIN-to-Maybe/main/demo/Simplefin%20Settings.png)
 ![Scheduling Settings](https://raw.githubusercontent.com/Toby-Null/SimpleFIN-to-Maybe/main/demo/Scheduling%20Settings.png)
+![Scheduling Settings](https://raw.githubusercontent.com/Toby-Null/SimpleFIN-to-Maybe/main/demo/Budget%20Status.png)
 
 # Installation
 Prerequisites
