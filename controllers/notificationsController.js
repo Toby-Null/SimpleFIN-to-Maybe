@@ -86,7 +86,7 @@ const toggleEventNotification = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid notification method' });
     }
     
-    const validEvents = ['sync_success', 'sync_error', 'sync_started', 'server_start', 'server_error'];
+    const validEvents = ['sync_success', 'sync_error', 'sync_started', 'server_start', 'server_error', 'budget_exceeded'];
     if (!validEvents.includes(event)) {
       return res.status(400).json({ success: false, error: 'Invalid event type' });
     }

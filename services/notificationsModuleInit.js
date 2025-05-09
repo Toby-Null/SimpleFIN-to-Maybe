@@ -12,7 +12,8 @@ const initializeNotificationEvents = async () => {
       'sync_error',
       'sync_started',
       'server_start',
-      'server_error'
+      'server_error',
+      'budget_exceeded'
     ];
     
     // First check which events are already in the database
