@@ -11,7 +11,6 @@ const { pool } = require('./config/database');
 const cron = require('node-cron');
 const syncService = require('./services/syncService');
 const { notifyServerStart, notifyServerError } = require('./services/notificationService');
-const { checkBudgets } = require('./services/budgetNotificationService');
 require('./services/notificationsModuleInit');
 
 // Import routes
@@ -20,7 +19,7 @@ const linkagesRoutes = require('./routes/linkages');
 const settingsRoutes = require('./routes/settings');
 const rulesRoutes = require('./routes/rules');
 const notificationsRoutes = require('./routes/notifications');
-const budgetsRoutes = require('./routes/budgets');
+const budgetRoutes = require('./routes/budgets');
 
 
 const app = express();
@@ -64,7 +63,7 @@ app.use('/linkages', linkagesRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/rules', rulesRoutes);
 app.use('/notifications', notificationsRoutes);
-app.use('/budgets', budgetsRoutes);
+app.use('/budgets', budgetRoutes);
 
 // Home route (redirects to linkages)
 app.get('/', (req, res) => {

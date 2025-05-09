@@ -4,8 +4,8 @@ const {
   getBudgetStatusPage,
   runBudgetCheck,
   createCurrentMonthBudget,
-  updateBudgetCategory,
-  getBudgetCategories
+  syncBudgetsFromMaybe,
+  deleteAllBudgetData
 } = require('../controllers/budgetNotificationsController');
 
 // Get budget status page
@@ -15,12 +15,12 @@ router.get('/status', getBudgetStatusPage);
 router.post('/check', runBudgetCheck);
 
 // Create a new budget for the current month
-router.post('/create-current', createCurrentMonthBudget);
+router.post('/create', createCurrentMonthBudget);
 
-// Update budget category spending amount
-router.post('/categories/:budgetCategoryId', updateBudgetCategory);
+// Sync budgets from Maybe
+router.post('/sync', syncBudgetsFromMaybe);
 
-// Get all budget categories for the current budget (AJAX endpoint)
-router.get('/categories', getBudgetCategories);
+// Delete all budget data for testing
+router.post('/delete-all', deleteAllBudgetData);
 
 module.exports = router;

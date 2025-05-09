@@ -7,22 +7,30 @@
       <% if (budgetStatus.status === 'success') { %>
         <form action="/budgets/check" method="POST" class="me-1">
           <button type="submit" class="btn btn-primary rounded-pill">
-            <i class="fas fa-sync-alt me-1"></i> Check Budgets Now
+            <i class="fas fa-sync-alt me-1"></i> Check Budgets
           </button>
         </form>
-        <button type="button" class="btn btn-success rounded-pill me-1" id="editBudgetBtn">
-          <i class="fas fa-edit me-1"></i> Edit Budget
-        </button>
+        <form action="/budgets/sync" method="POST" class="d-inline ml-2">
+          <button type="submit" class="btn btn-secondary">
+            <i class="fas fa-download"></i> Sync Budgets
+          </button>
+        </form>
       <% } else { %>
-        <form action="/budgets/create-current" method="POST" class="me-1">
-          <button type="submit" class="btn btn-success rounded-pill">
-            <i class="fas fa-plus me-1"></i> Create Budget for Current Month
+        <form action="/budgets/create" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-sync-alt"></i> Create Budget
           </button>
         </form>
       <% } %>
       <a href="/" class="btn btn-outline-secondary rounded-pill">
         <i class="fas fa-arrow-left me-1"></i> Back to Home
       </a>
+      
+      <form action="/budgets/delete-all" method="POST" class="ms-auto" onsubmit="return confirm('WARNING: This will delete ALL budget data. This action cannot be undone. Continue?');">
+        <button type="submit" class="btn btn-danger rounded-pill">
+          <i class="fas fa-trash-alt me-1"></i> Delete All Budget Data
+        </button>
+      </form>
     </div>
   </div>
 </div>
@@ -56,9 +64,9 @@
         </div>
         <h3 class="fs-5"><%= budgetStatus.message %></h3>
         <p class="text-muted mb-4">Create a budget to track your spending</p>
-        <form action="/budgets/create-current" method="POST" class="mb-3">
+        <form action="/budgets/create" method="POST" class="mb-3">
           <button type="submit" class="btn btn-primary rounded-pill">
-            <i class="fas fa-plus me-1"></i> Create Budget for Current Month
+            <i class="fas fa-plus me-1"></i> Create Budget
           </button>
         </form>
       </div>
@@ -101,6 +109,10 @@
                     <% if (category.is_exceeded) { %>
                       <span class="badge bg-danger">
                         <i class="fas fa-exclamation-circle me-1"></i> Over Budget
+                      </span>
+                    <% } else if (category.percent_used == 100) { %>
+                      <span class="badge bg-warning text-dark">
+                        <i class="fas fa-exclamation-circle me-1"></i> Budget Reached
                       </span>
                     <% } else if (category.percent_used >= 90) { %>
                       <span class="badge bg-warning text-dark">
@@ -180,98 +192,5 @@
     </div>
   </div>
 </div>
-
-<!-- Edit Budget Modal -->
-<div class="modal fade" id="editBudgetModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Budget Categories</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="budgetCategoriesContainer" class="mb-3">
-          <div class="text-center py-3">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading budget categories...</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Handle Edit Budget button
-    const editBudgetBtn = document.getElementById('editBudgetBtn');
-    if (editBudgetBtn) {
-      editBudgetBtn.addEventListener('click', function() {
-        const editBudgetModal = new bootstrap.Modal(document.getElementById('editBudgetModal'));
-        editBudgetModal.show();
-        
-        loadBudgetCategories();
-      });
-    }
-    
-    // Function to load budget categories
-    function loadBudgetCategories() {
-      const container = document.getElementById('budgetCategoriesContainer');
-      
-      fetch('/budgets/categories')
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Render budget categories
-            let html = '<div class="row g-3">';
-            
-            data.categories.forEach(category => {
-              html += `
-                <div class="col-md-6">
-                  <form action="/budgets/categories/${category.id}" method="POST" class="card">
-                    <div class="card-body">
-                      <h5 class="card-title">${category.category_name}</h5>
-                      <div class="input-group mb-3">
-                        <span class="input-group-text">$</span>
-                        <input type="number" class="form-control" name="budgetedSpending" 
-                          value="${category.budgeted_spending}" min="0" step="0.01" required>
-                        <button type="submit" class="btn btn-primary">
-                          <i class="fas fa-save"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-          } else {
-            container.innerHTML = `
-              <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                ${data.message || 'Failed to load budget categories'}
-              </div>
-            `;
-          }
-        })
-        .catch(error => {
-          console.error('Error loading budget categories:', error);
-          container.innerHTML = `
-            <div class="alert alert-danger">
-              <i class="fas fa-exclamation-circle me-2"></i>
-              Error loading budget categories: ${error.message}
-            </div>
-          `;
-        });
-    }
-  });
-</script>
 
 <%- include('../partials/footer') %>

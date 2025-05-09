@@ -6,7 +6,7 @@ const { getSetting } = require('../models/setting');
 const { applyRulesToTransaction } = require('../models/rule');
 const { syncCategoriesFromMaybe } = require('../models/category');
 const { notifySyncStarted, notifySyncSuccess, notifySyncError } = require('./notificationService');
-const { checkBudgets } = require('./budgetNotificationService');
+const { checkBudgets, getBudgetStatus } = require('./budgetNotificationService');
 
 // Sync a single linkage
 const syncLinkage = async (linkageId) => {
@@ -147,9 +147,19 @@ const syncLinkage = async (linkageId) => {
     
     console.log(`Sync completed successfully for linkage ${linkageId}`);
     
-    // Check budget status and send notifications if needed
+    // Step 1: First sync budget data from Maybe
     try {
-      console.log('Checking budget status...');
+      console.log('Syncing budget data from Maybe...');
+      const budgetStatus = await getBudgetStatus(new Date(), true);
+      
+      if (budgetStatus.status === 'success') {
+        console.log(`Successfully synced budget for ${budgetStatus.month} with ${budgetStatus.categories.length} categories`);
+      } else {
+        console.log('No active budget found in Maybe for the current month');
+      }
+      
+      // Step 2: Then check if any budgets are exceeded
+      console.log('Checking budget thresholds...');
       const budgetNotifications = await checkBudgets();
       
       if (budgetNotifications.length > 0) {
@@ -158,7 +168,7 @@ const syncLinkage = async (linkageId) => {
         console.log('No budget thresholds exceeded.');
       }
     } catch (budgetError) {
-      console.error('Error checking budget status:', budgetError);
+      console.error('Error during budget processing:', budgetError);
       // Don't fail the sync if budget check fails
     }
     

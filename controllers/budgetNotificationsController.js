@@ -2,20 +2,135 @@ const { getBudgetStatus, checkBudgets } = require('../services/budgetNotificatio
 const { pool } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
-// Get budget status and notifications
+// Get budget status page
 const getBudgetStatusPage = async (req, res) => {
   try {
-    const date = req.query.date ? new Date(req.query.date) : new Date();
-    const budgetStatus = await getBudgetStatus(date);
+    // Use local database only - don't call Maybe API
+    const today = new Date();
+    const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const currentMonthStr = currentMonth.toISOString().split('T')[0];
+    
+    // Get unique budget_ids from notifications for current month
+    const budgetResult = await pool.query(`
+      SELECT DISTINCT budget_id 
+      FROM budget_notifications 
+      WHERE month = $1
+      LIMIT 1
+    `, [currentMonthStr]);
+    
+    if (budgetResult.rows.length === 0) {
+      // No budget found in local database
+      return res.render('budgets/status', {
+        budgetStatus: {
+          status: 'no_budget',
+          message: 'No active budget found for current month'
+        },
+        title: 'Budget Status',
+        activeLink: 'budget-status'
+      });
+    }
+    
+    const budgetId = budgetResult.rows[0].budget_id;
+    
+    // Get category information from budget_notifications and categories tables
+    const categoriesResult = await pool.query(`
+      SELECT bn.category_id, c.name AS category_name, 
+             bn.budget_amount, bn.spent_amount, bn.notification_sent
+      FROM budget_notifications bn
+      JOIN categories c ON bn.category_id = c.id
+      WHERE bn.budget_id = $1 AND bn.month = $2
+    `, [budgetId, currentMonthStr]);
+    
+    // Calculate totals
+    let totalBudget = 0;
+    let totalSpent = 0;
+    
+    // Transform data
+    const categories = categoriesResult.rows.map(category => {
+      const budgetAmount = parseFloat(category.budget_amount || 0);
+      const spentAmount = parseFloat(category.spent_amount || 0);
+      
+      totalBudget += budgetAmount;
+      totalSpent += spentAmount;
+      
+      const percentUsed = budgetAmount > 0 
+        ? Math.round((spentAmount / budgetAmount) * 100) 
+        : 0;
+      
+      const isExceeded = spentAmount > budgetAmount;
+      
+      return {
+        category_id: category.category_id,
+        category_name: category.category_name,
+        budget_amount: budgetAmount.toFixed(2),
+        budget_amount_numeric: budgetAmount, // For sorting
+        spent_amount: spentAmount.toFixed(2),
+        spent_amount_numeric: spentAmount, // For sorting
+        percent_used: percentUsed,
+        is_exceeded: isExceeded,
+        notification_sent: category.notification_sent || false
+      };
+    });
+    
+    // Default to 'name_asc' if no sort parameter is provided
+    // Change this to 'budget_desc' if you want budget to be the default sort
+    const sortBy = req.query.sort || 'budget_desc';
+    
+    // Apply sorting
+    if (sortBy === 'budget_desc') {
+      // Sort by budget amount (descending), then by name
+      categories.sort((a, b) => {
+        // First sort by budget amount (descending)
+        if (b.budget_amount_numeric !== a.budget_amount_numeric) {
+          return b.budget_amount_numeric - a.budget_amount_numeric;
+        }
+        // If budget amounts are the same, sort by name
+        return a.category_name.localeCompare(b.category_name);
+      });
+    } else if (sortBy === 'budget_asc') {
+      // Sort by budget amount (ascending), then by name
+      categories.sort((a, b) => {
+        // First sort by budget amount (ascending)
+        if (a.budget_amount_numeric !== b.budget_amount_numeric) {
+          return a.budget_amount_numeric - b.budget_amount_numeric;
+        }
+        // If budget amounts are the same, sort by name
+        return a.category_name.localeCompare(b.category_name);
+      });
+    } else {
+      // Default to sorting by name (alphabetical)
+      categories.sort((a, b) => a.category_name.localeCompare(b.category_name));
+    }
+    
+    // Format month name
+    const monthName = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+    
+    // Construct the same response structure as getBudgetStatus
+    const budgetStatus = {
+      status: 'success',
+      month: monthName,
+      budget_id: budgetId,
+      total_budget: totalBudget.toFixed(2),
+      total_spent: totalSpent.toFixed(2),
+      categories: categories,
+      currentSort: sortBy
+    };
+    
+    // Add logging to see what's being sent to the view
+    console.log(`Total categories after sorting: ${categories.length}`);
+    if (categories.length > 0) {
+      categories.slice(0, 3).forEach(cat => {
+      });
+    }
     
     res.render('budgets/status', {
-      title: 'Budget Status',
       budgetStatus,
-      date
+      title: 'Budget Status',
+      activeLink: 'budget-status'
     });
   } catch (error) {
-    console.error('Error getting budget status:', error);
-    req.flash('error_msg', `Error getting budget status: ${error.message}`);
+    console.error('Error getting budget status page:', error);
+    req.flash('error_msg', `Error retrieving budget status: ${error.message}`);
     res.redirect('/');
   }
 };
@@ -41,147 +156,62 @@ const runBudgetCheck = async (req, res) => {
 
 // Create a new budget for the current month
 const createCurrentMonthBudget = async (req, res) => {
+    try {
+        const budgetStatus = await getBudgetStatus(new Date(), true);
+        
+        // Make sure categories are properly sorted
+        if (budgetStatus.categories) {
+          // Sort by name for better readability
+          budgetStatus.categories.sort((a, b) => a.category_name.localeCompare(b.category_name));
+        }
+        
+        // Use redirect instead of directly rendering the view
+        req.flash('success_msg', `Successfully created budget for ${budgetStatus.month}`);
+        res.redirect('/budgets/status');
+    } catch (error) {
+        console.error('Error creating budget for current month:', error);
+        req.flash('error_msg', `Error retrieving budget status: ${error.message}`);
+        res.redirect('/');
+    }
+};
+
+// Sync budgets from Maybe
+const syncBudgetsFromMaybe = async (req, res) => {
   try {
-    const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    console.log('Starting budget sync from Maybe...');
     
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
+    // Run getBudgetStatus with saveNotifications=true to save the data
+    const budgetStatus = await getBudgetStatus(new Date(), true);
     
-    const existingBudgetResult = await pool.query(`
-      SELECT id FROM budgets 
-      WHERE start_date <= $1 AND end_date >= $1
-    `, [startDateStr]);
-    
-    if (existingBudgetResult.rows.length > 0) {
-      req.flash('info_msg', 'A budget already exists for the current month.');
+    if (budgetStatus.status !== 'success') {
+      req.flash('error_msg', 'No budget found in Maybe for the current month.');
       return res.redirect('/budgets/status');
     }
     
-    const budgetId = uuidv4();
+    console.log(`Successfully synced budget and ${budgetStatus.categories.length} categories.`);
+    req.flash('success_msg', `Successfully synced budget for ${budgetStatus.month} with ${budgetStatus.categories.length} categories.`);
     
-    try {
-      const columnInfoResult = await pool.query(`
-        SELECT is_nullable 
-        FROM information_schema.columns 
-        WHERE table_name = 'budgets' AND column_name = 'family_id'
-      `);
-      
-      const isNullable = columnInfoResult.rows.length > 0 ? 
-                          columnInfoResult.rows[0].is_nullable === 'YES' : 
-                          false;
-      
-      if (!isNullable) {
-        await pool.query(`
-          ALTER TABLE budgets ALTER COLUMN family_id DROP NOT NULL
-        `);
-      }
-    } catch (alterError) {
-      console.error('Error checking/altering table structure:', alterError);
-    }
-    
-    await pool.query(`
-      INSERT INTO budgets 
-      (id, family_id, start_date, end_date, currency, created_at, updated_at)
-      VALUES ($1, NULL, $2, $3, 'USD', NOW(), NOW())
-    `, [budgetId, startDateStr, endDateStr]);
-    
-    try {
-      const categoriesResult = await pool.query(`
-        SELECT id FROM categories
-      `);
-      
-      // Create budget categories with zero spending
-      for (const category of categoriesResult.rows) {
-        await pool.query(`
-          INSERT INTO budget_categories
-          (id, budget_id, category_id, budgeted_spending, currency, created_at, updated_at)
-          VALUES ($1, $2, $3, 0, 'USD', NOW(), NOW())
-        `, [uuidv4(), budgetId, category.id]);
-      }
-    } catch (categoryError) {
-      console.error('Error creating budget categories:', categoryError);
-      // Continue anyway - at least we created the budget
-    }
-    
-    req.flash('success_msg', `Budget created for ${startDate.toLocaleString('default', { month: 'long', year: 'numeric' })}. Please set category spending limits.`);
-    res.redirect('/budgets/status');
+    return res.redirect('/budgets/status');
   } catch (error) {
-    console.error('Error creating budget:', error);
-    req.flash('error_msg', `Error creating budget: ${error.message}`);
-    res.redirect('/budgets/status');
+    console.error('Error syncing budgets from Maybe:', error);
+    req.flash('error_msg', `Error syncing budgets: ${error.message}`);
+    return res.redirect('/budgets/status');
   }
 };
 
-// Update budget category spending amount
-const updateBudgetCategory = async (req, res) => {
+// Delete all budget data for testing
+const deleteAllBudgetData = async (req, res) => {
   try {
-    const { budgetCategoryId } = req.params;
-    const { budgetedSpending } = req.body;
+    // Delete all budget notifications
+    await pool.query(`DELETE FROM budget_notifications`);
     
-    // Validate budgeted spending
-    if (isNaN(budgetedSpending) || parseFloat(budgetedSpending) < 0) {
-      req.flash('error_msg', 'Budget amount must be a valid positive number.');
-      return res.redirect('/budgets/status');
-    }
-    
-    // Update the budget category
-    await pool.query(`
-      UPDATE budget_categories
-      SET budgeted_spending = $1, updated_at = NOW()
-      WHERE id = $2
-    `, [budgetedSpending, budgetCategoryId]);
-    
-    req.flash('success_msg', 'Budget category updated successfully.');
+    console.log('Successfully deleted all budget data for testing');
+    req.flash('success_msg', 'Successfully deleted all budget data. You can now start fresh.');
     res.redirect('/budgets/status');
   } catch (error) {
-    console.error('Error updating budget category:', error);
-    req.flash('error_msg', `Error updating budget category: ${error.message}`);
+    console.error('Error deleting budget data:', error);
+    req.flash('error_msg', `Error deleting budget data: ${error.message}`);
     res.redirect('/budgets/status');
-  }
-};
-
-// Get all budget categories for the current budget
-const getBudgetCategories = async (req, res) => {
-  try {
-    const date = req.query.date ? new Date(req.query.date) : new Date();
-    const currentDate = date.toISOString().split('T')[0];
-    
-    // Get active budget for the date
-    const budgetResult = await pool.query(`
-      SELECT id FROM budgets WHERE start_date <= $1 AND end_date >= $1
-    `, [currentDate]);
-    
-    if (budgetResult.rows.length === 0) {
-      return res.json({ 
-        success: false,
-        message: 'No active budget found for this month.' 
-      });
-    }
-    
-    const budgetId = budgetResult.rows[0].id;
-    
-    // Get all budget categories with category info
-    const categoriesResult = await pool.query(`
-      SELECT bc.id, bc.category_id, c.name as category_name, bc.budgeted_spending, bc.currency
-      FROM budget_categories bc
-      JOIN categories c ON bc.category_id = c.id
-      WHERE bc.budget_id = $1
-      ORDER BY c.name
-    `, [budgetId]);
-    
-    res.json({ 
-      success: true,
-      budgetId: budgetId,
-      categories: categoriesResult.rows
-    });
-  } catch (error) {
-    console.error('Error getting budget categories:', error);
-    res.status(500).json({ 
-      success: false,
-      message: error.message 
-    });
   }
 };
 
@@ -189,6 +219,6 @@ module.exports = {
   getBudgetStatusPage,
   runBudgetCheck,
   createCurrentMonthBudget,
-  updateBudgetCategory,
-  getBudgetCategories
+  syncBudgetsFromMaybe,
+  deleteAllBudgetData
 };
