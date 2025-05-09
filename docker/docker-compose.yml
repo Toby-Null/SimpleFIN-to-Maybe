@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: simplefin-maybe-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - PORT=${PORT:-3000}
+      - NODE_ENV=${NODE_ENV:-production}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-simplefin_maybe}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-yourpassword}
+      - SESSION_SECRET=${SESSION_SECRET:-your_session_secret_key}
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    command: sh -c "node migrations/run.js && npm start"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17.4
+    container_name: simplefin-maybe-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-yourpassword}
+      - POSTGRES_DB=${DB_NAME:-simplefin_maybe}
+    ports:
+      - "${DB_PORT_EXPOSE:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
