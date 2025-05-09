@@ -59,6 +59,21 @@ npm start
 ```
 6. (Optional) Use Cloudflare Zero Trust - Access to setup login
 
+# How to update
+1. Clone new source
+2. Install dependencies
+```ssh
+npm install
+```
+3. Set up the database
+```ssh
+npm run migrate
+```
+4. Start the server
+```ssh
+npm start
+```
+
 ## License
 This project is licensed under the GNU General Public License v3.0 (GPL-3.0) - see the LICENSE file for details.
 
