@@ -4,12 +4,13 @@
 A synchronization tool to connect SimpleFIN accounts with Maybe Finance.
 
 # Features
-- SimpleFIN Integration: Connect to your financial institutions through SimpleFIN's secure API
-- Maybe Finance Sync: Push account data directly to your Maybe Finance database
-- Automatic Syncing: Schedule regular data syncing
-- Transaction Rule: Transform your transaction data with custom rules for categorization
-- Transaction History: Customize how far back to retrieve transactions
-- Web Interface: Easy-to-use dashboard for configuration and monitoring
+- SimpleFIN Integration
+- Maybe Finance Sync
+- Automatic Syncing
+- Transaction Rule
+- Transaction History
+- Web Interface
+- Event Notification
 
 # Demo
 
