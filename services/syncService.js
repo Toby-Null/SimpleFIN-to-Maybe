@@ -6,6 +6,7 @@ const { getSetting } = require('../models/setting');
 const { applyRulesToTransaction } = require('../models/rule');
 const { syncCategoriesFromMaybe } = require('../models/category');
 const { notifySyncStarted, notifySyncSuccess, notifySyncError } = require('./notificationService');
+const { checkBudgets } = require('./budgetNotificationService');
 
 // Sync a single linkage
 const syncLinkage = async (linkageId) => {
@@ -145,6 +146,21 @@ const syncLinkage = async (linkageId) => {
     await updateLastSync(linkageId);
     
     console.log(`Sync completed successfully for linkage ${linkageId}`);
+    
+    // Check budget status and send notifications if needed
+    try {
+      console.log('Checking budget status...');
+      const budgetNotifications = await checkBudgets();
+      
+      if (budgetNotifications.length > 0) {
+        console.log(`Sent ${budgetNotifications.length} budget exceeded notifications`);
+      } else {
+        console.log('No budget thresholds exceeded.');
+      }
+    } catch (budgetError) {
+      console.error('Error checking budget status:', budgetError);
+      // Don't fail the sync if budget check fails
+    }
     
     // Send success notification with details
     await notifySyncSuccess(linkageId, {

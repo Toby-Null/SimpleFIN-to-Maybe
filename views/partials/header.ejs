@@ -60,6 +60,14 @@
             </a>
           </li>
           <li class="nav-item px-3">
+            <a class="nav-link <%= title === 'Budget Status' ? 'active' : '' %>" href="/budgets/status">
+              <span>Budget</span>
+              <% if (title === 'Budget Status') { %>
+                <div class="nav-indicator"></div>
+              <% } %>
+            </a>
+          </li>
+          <li class="nav-item px-3">
             <a class="nav-link <%= title === 'Notifications' ? 'active' : '' %>" href="/notifications">
               <span>Notifications</span>
               <% if (title === 'Notifications') { %>

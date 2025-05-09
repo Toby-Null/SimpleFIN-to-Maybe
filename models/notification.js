@@ -228,6 +228,7 @@ const sendNotification = async (event, data) => {
     
     // If no enabled notifications, return
     if (result.rows.length === 0) {
+      console.log(`No enabled notification methods found for event: ${event}`);
       return;
     }
     
@@ -341,6 +342,14 @@ const sendWebhookNotification = async (settings, event, data) => {
             message += `❌ *Error:*\n\`\`\`\n${data.error}\n\`\`\`\n`;
           }
           break;
+        case 'budget_exceeded':
+          message += `💰 *Budget Alert:*\n`;
+          message += `• Category: ${data.category_name}\n`;
+          message += `• Month: ${data.month}\n`;
+          message += `• Budget: $${data.budget_amount}\n`;
+          message += `• Spent: $${data.spent_amount}\n`;
+          message += `• Over Budget: $${data.amount_over} (${data.percent_over}%)\n`;
+          break;
       }
       
       // Add timestamp
@@ -368,6 +377,9 @@ const sendWebhookNotification = async (settings, event, data) => {
           break;
         case 'server_start':
           color = 0x00ffff; // Cyan
+          break;
+        case 'budget_exceeded':
+          color = 0xff3300; // Bright red/orange
           break;
       }
       
@@ -428,6 +440,33 @@ const sendWebhookNotification = async (settings, event, data) => {
             });
           }
           break;
+        case 'budget_exceeded':
+          embed.fields.push({
+            name: 'Category',
+            value: data.category_name,
+            inline: true
+          });
+          embed.fields.push({
+            name: 'Month',
+            value: data.month,
+            inline: true
+          });
+          embed.fields.push({
+            name: 'Budget',
+            value: `$${data.budget_amount}`,
+            inline: true
+          });
+          embed.fields.push({
+            name: 'Spent',
+            value: `$${data.spent_amount}`,
+            inline: true
+          });
+          embed.fields.push({
+            name: 'Over Budget',
+            value: `$${data.amount_over} (${data.percent_over}%)`,
+            inline: true
+          });
+          break;
       }
       
       // Discord webhook format
@@ -487,7 +526,12 @@ const sendHttpNotification = async (settings, event, data) => {
     };
     
     Object.keys(placeholders).forEach(key => {
-      body = body.replace(new RegExp(`{{${key}}}`, 'g'), placeholders[key]);
+      if (typeof placeholders[key] === 'object') {
+        // For nested objects, stringify them to avoid template errors
+        body = body.replace(new RegExp(`{{${key}}}`, 'g'), JSON.stringify(placeholders[key]));
+      } else {
+        body = body.replace(new RegExp(`{{${key}}}`, 'g'), placeholders[key]);
+      }
     });
     
     let headers = {
@@ -520,7 +564,16 @@ const sendHttpNotification = async (settings, event, data) => {
 };
 
 const formatEventName = (event) => {
-  return event
+  const eventNames = {
+    'sync_success': 'Sync Success',
+    'sync_error': 'Sync Error',
+    'sync_started': 'Sync Started',
+    'server_start': 'Server Start',
+    'server_error': 'Server Error',
+    'budget_exceeded': 'Budget Alert'
+  };
+  
+  return eventNames[event] || event
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -554,6 +607,17 @@ const getEmailHtml = (event, data) => {
           <pre style="background-color: #f8f8f8; padding: 10px; border-radius: 4px; overflow: auto;">${data.error}</pre>
         `;
       }
+      break;
+    case 'budget_exceeded':
+      details = `
+        <div style="margin: 15px 0; padding: 15px; border-left: 4px solid #ff3b30; background-color: #fff5f5;">
+          <p><strong>Category:</strong> ${data.category_name}</p>
+          <p><strong>Month:</strong> ${data.month}</p>
+          <p><strong>Budget Amount:</strong> $${data.budget_amount}</p>
+          <p><strong>Amount Spent:</strong> $${data.spent_amount}</p>
+          <p><strong>Over Budget:</strong> $${data.amount_over} (${data.percent_over}%)</p>
+        </div>
+      `;
       break;
   }
   

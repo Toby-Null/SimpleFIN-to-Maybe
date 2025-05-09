@@ -11,6 +11,7 @@ const { pool } = require('./config/database');
 const cron = require('node-cron');
 const syncService = require('./services/syncService');
 const { notifyServerStart, notifyServerError } = require('./services/notificationService');
+const { checkBudgets } = require('./services/budgetNotificationService');
 require('./services/notificationsModuleInit');
 
 // Import routes
@@ -19,6 +20,8 @@ const linkagesRoutes = require('./routes/linkages');
 const settingsRoutes = require('./routes/settings');
 const rulesRoutes = require('./routes/rules');
 const notificationsRoutes = require('./routes/notifications');
+const budgetsRoutes = require('./routes/budgets');
+
 
 const app = express();
 
@@ -61,6 +64,7 @@ app.use('/linkages', linkagesRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/rules', rulesRoutes);
 app.use('/notifications', notificationsRoutes);
+app.use('/budgets', budgetsRoutes);
 
 // Home route (redirects to linkages)
 app.get('/', (req, res) => {
@@ -92,15 +96,21 @@ app.use((err, req, res, next) => {
 });
 
 // Set up cron job for scheduled syncs
-const setupCronJob = async () => {
+const setupCronJobs = async () => {
   try {
     const { getSetting } = require('./models/setting');
     const cronSchedule = await getSetting('synchronization_schedule') || process.env.SYNC_SCHEDULE;
     
     if (cronSchedule && cron.validate(cronSchedule)) {
+      // Set up sync job (which includes budget checking)
       cron.schedule(cronSchedule, async () => {
         console.log(`Running scheduled sync at ${new Date().toISOString()}`);
-        await syncService.runAllSyncs();
+        try {
+          // This will run budget checks as part of the sync process
+          await syncService.runAllSyncs();
+        } catch (error) {
+          console.error('Error during scheduled sync:', error);
+        }
       });
       console.log(`Scheduled sync set up with cron pattern: ${cronSchedule}`);
     } else {
@@ -111,6 +121,7 @@ const setupCronJob = async () => {
   }
 };
 
+
 // Start server
 const PORT = process.env.PORT || 9501;
 app.listen(PORT, async () => {
@@ -118,7 +129,7 @@ app.listen(PORT, async () => {
   
   try {
     // Run existing setup operations
-    await setupCronJob();
+    await setupCronJobs();
     
     // Send server start notification
     await notifyServerStart();
