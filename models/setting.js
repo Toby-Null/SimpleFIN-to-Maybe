@@ -82,30 +82,55 @@ const getAccountCount = async (type) => {
   }
 };
 
-// Parse SimpleFIN Setup Token to extract username and password
+// Parse SimpleFIN Setup Token
 const parseSimplefinSetupToken = async (setupToken) => {
   try {
-    let token = setupToken.trim();
-    if (token.includes('simplefin.org/setup/')) {
-      token = token.split('/setup/')[1];
+    const token = setupToken.trim();
+    
+    const claimUrl = Buffer.from(token, 'base64').toString('utf8');
+    
+    console.log('Decoded claim URL:', claimUrl);
+    
+    const axios = require('axios');
+    
+    const response = await axios.post(claimUrl, null, {
+      headers: {
+        'Content-Length': '0'
+      }
+    });
+    
+    const accessUrl = response.data.trim();
+    
+    if (!accessUrl || !accessUrl.startsWith('http')) {
+      throw new Error('Invalid access URL received from SimpleFIN');
     }
     
-    const base64 = token.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = Buffer.from(base64, 'base64').toString('utf8');
+    console.log('Received access URL (credentials hidden)');
     
-    const [username, password] = decoded.split(':');
+    const url = new URL(accessUrl);
+    const username = url.username;
+    const password = url.password;
     
     if (!username || !password) {
-      throw new Error('Invalid Setup Token format');
+      throw new Error('No credentials found in access URL');
     }
     
     await upsertSetting('simplefin_username', username, 'SimpleFIN Username');
     await upsertSetting('simplefin_password', password, 'SimpleFIN Password');
     
+    console.log('Successfully extracted and saved SimpleFIN credentials');
+    
     return { username, password };
   } catch (error) {
     console.error('Error parsing SimpleFIN Setup Token:', error);
-    throw error;
+    
+    if (error.response) {
+      throw new Error(`SimpleFIN API error: ${error.response.status} - ${error.response.statusText}`);
+    } else if (error.code === 'ENOTFOUND') {
+      throw new Error('Network error: Could not connect to SimpleFIN');
+    } else {
+      throw new Error(`Setup token processing failed: ${error.message}`);
+    }
   }
 };
 
