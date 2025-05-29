@@ -85,3 +85,4 @@ Toby Nguyen
 ## Acknowledgments
 - [SimpleFIN](https://beta-bridge.simplefin.org/) for their straightforward financial API
 - [Maybe Finance](https://github.com/maybe-finance/maybe) for their personal finance platform
+- Idea from [SimpleFIN to Maybe](https://github.com/steveredden/simplefin_to_maybe)

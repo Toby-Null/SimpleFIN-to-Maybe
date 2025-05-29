@@ -260,7 +260,71 @@ class MaybeClient {
     }
   }
   
-  // Helper method to execute queries
+  // Upsert account valuation for investment accounts
+  async upsertAccountValuation(accountId, simplefinAccountData) {
+    try {
+      await this.determineTables();
+      
+      const balanceDate = simplefinAccountData['balance-date'];
+      const balance = simplefinAccountData.balance;
+      
+      if (!balanceDate || balance === undefined) {
+        console.log('No balance date or balance found in SimpleFIN data');
+        return null;
+      }
+      
+      const valuationUuid = uuidv4();
+      const balanceDateObj = new Date(balanceDate * 1000);
+      const shortDate = balanceDateObj.toISOString().split('T')[0];
+      
+      // Check if a valuation already exists for this date
+      const existingValuation = await this.entryExists(accountId, balanceDate, this.valuationKey);
+      
+      if (existingValuation) {
+        console.log(`Valuation already exists for ${shortDate}, skipping`);
+        return existingValuation;
+      }
+      
+      // Insert the entries entry for the valuation
+      const entriesQuery = `
+        INSERT INTO ${this.entriesTable} (
+          account_id, entryable_type, entryable_id, amount, currency, date, name, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, (TO_TIMESTAMP($6)::DATE), $7, NOW(), NOW()
+        )
+      `;
+      
+      const entriesParams = [
+        accountId,
+        this.valuationKey,
+        valuationUuid,
+        balance,
+        'USD',
+        balanceDate,
+        'Balance Update'
+      ];
+      
+      await this.execute(entriesQuery, entriesParams);
+      
+      // Insert the valuation record
+      const valuationQuery = `
+        INSERT INTO ${this.valuationsTable} (
+          id, created_at, updated_at
+        ) VALUES (
+          $1, NOW(), NOW()
+        )
+      `;
+      
+      await this.execute(valuationQuery, [valuationUuid]);
+      
+      console.log(`Created valuation for ${shortDate} with amount ${balance}`);
+      return valuationUuid;
+    } catch (error) {
+      console.error('Error upserting account valuation:', error);
+      throw error;
+    }
+  }
+  
   async execute(query, params = []) {
     try {
       console.log('Executing Query:', query);
